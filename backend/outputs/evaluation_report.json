@@ -1,0 +1,124 @@
+{
+  "overall_score": 100.0,
+  "dimension_scores": [
+    {
+      "dimension": "Entity Accuracy",
+      "score": 100,
+      "max_score": 100,
+      "weight": 20,
+      "weighted_score": 20.0,
+      "notes": "[PASS] Entity Accuracy"
+    },
+    {
+      "dimension": "Completeness",
+      "score": 100,
+      "max_score": 100,
+      "weight": 20,
+      "weighted_score": 20.0,
+      "notes": "[PASS] Required Sections Present; [PASS] Paragraph Range Match"
+    },
+    {
+      "dimension": "Structure",
+      "score": 100,
+      "max_score": 100,
+      "weight": 20,
+      "weighted_score": 20.0,
+      "notes": "[PASS] Required Sections Present"
+    },
+    {
+      "dimension": "Consistency",
+      "score": 100,
+      "max_score": 100,
+      "weight": 15,
+      "weighted_score": 15.0,
+      "notes": "[PASS] Respondent Number Consistency; [PASS] Verb Agreement"
+    },
+    {
+      "dimension": "Template Fidelity",
+      "score": 100,
+      "max_score": 100,
+      "weight": 15,
+      "weighted_score": 15.0,
+      "notes": "[PASS] Template Fidelity (Fixed Phrases); [PASS] Deponent-Respondent Type Match"
+    },
+    {
+      "dimension": "Hallucination Check",
+      "score": 100,
+      "max_score": 100,
+      "weight": 10,
+      "weighted_score": 10.0,
+      "notes": "[PASS] Entity Accuracy"
+    }
+  ],
+  "validation_results": [
+    {
+      "check_name": "Respondent Number Consistency",
+      "check_id": "respondent_number_consistency",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "All 6 mentions consistently use Respondent No.2",
+      "details": null,
+      "source_reference": null
+    },
+    {
+      "check_name": "Paragraph Range Match",
+      "check_id": "paragraph_range_match",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "Verification correctly states 'paragraphs 1 to 6'",
+      "details": null,
+      "source_reference": null
+    },
+    {
+      "check_name": "Required Sections Present",
+      "check_id": "required_sections_present",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "All 11 required sections are present",
+      "details": null,
+      "source_reference": null
+    },
+    {
+      "check_name": "Verb Agreement",
+      "check_id": "verb_agreement",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "Verb agreement correct: 'solemnly affirm' → 'Solemnly affirmed'",
+      "details": null,
+      "source_reference": null
+    },
+    {
+      "check_name": "Deponent-Respondent Type Match",
+      "check_id": "deponent_type_match",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "Deponent type correctly matches: Organisation representative",
+      "details": null,
+      "source_reference": null
+    },
+    {
+      "check_name": "Entity Accuracy",
+      "check_id": "entity_accuracy",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "All 9 critical entities verified present in the document",
+      "details": null,
+      "source_reference": null
+    },
+    {
+      "check_name": "Template Fidelity (Fixed Phrases)",
+      "check_id": "template_fidelity",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "Template fidelity: 9/11 fixed phrases present (82%)",
+      "details": "Missing phrases:\n- In the premises aforesaid\n- deserves to be dismissed with costs",
+      "source_reference": "Fixed legal phrases from format guide"
+    }
+  ],
+  "checks_passed": 7,
+  "checks_failed": 0,
+  "total_checks": 7,
+  "issues_detected": [],
+  "scoring_methodology": "Scoring is based on 6 weighted dimensions, each scored 0-100:\n- Entity Accuracy: weight 20%\n- Completeness: weight 20%\n- Structure: weight 20%\n- Consistency: weight 15%\n- Template Fidelity: weight 15%\n- Hallucination Check: weight 10%\n\nOverall score = sum of (dimension_score × weight/100) for all dimensions.\nAll 7 checks are deterministic (no LLM dependency).\nHIGH severity failures incur a 20-point penalty on the dimension score.\nMEDIUM severity failures incur a 10-point penalty.",
+  "generated_at": "2026-09-11T13:11:00.105590"
+}

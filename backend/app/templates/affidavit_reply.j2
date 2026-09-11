@@ -1,0 +1,76 @@
+{# 
+  Affidavit in Reply — Jinja2 Template (Default: Bombay High Court Format)
+  
+  This template follows the 10-part skeleton defined in the format guide.
+  All fixed legal phrases are preserved exactly as specified.
+  
+  Variables come from the CaseEntities Pydantic model.
+#}
+IN THE HIGH COURT OF JUDICATURE AT {{ forum_city }}
+
+{{ clean_jurisdiction }}
+
+{{ case_type }} NO. {{ case_number }} OF {{ year }}
+
+{% if petitioner.description %}{{ petitioner.name }}, {{ petitioner.description }},{% else %}{{ petitioner.name }},{% endif %}
+
+{% if petitioner.address %}residing at {{ petitioner.address }}.{% endif %}
+{% if petitioner.through %}Through {{ petitioner.through }}.{% endif %}
+...Petitioner
+
+VERSUS
+
+{% for respondent in respondents %}
+{{ respondent.respondent_number }}. {% if respondent.through %}{{ respondent.name }}, Through {{ respondent.through }}, {{ respondent.address | default('') }}.{% else %}{{ respondent.name }}{% if respondent.description %}, {{ respondent.description }}{% endif %}{% if respondent.address %}, residing at {{ respondent.address }}{% endif %}.{% endif %}
+...Respondent No.{{ respondent.respondent_number }}
+{% endfor %}
+
+AFFIDAVIT IN REPLY ON BEHALF OF RESPONDENT NO. {{ filing_respondent_number }}
+
+{% if deponent.is_organisation_representative %}I, {{ deponent.name }}, {{ deponent.designation }}, having office at {{ deponent.address }}, the {{ deponent.designation }} of the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% else %}I, {{ deponent.name }}, {% if deponent.age %}Age {{ deponent.age }}, {% endif %}{% if deponent.occupation %}Occupation: {{ deponent.occupation }}, {% endif %}residing at {{ deponent.address }}, the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% endif %}
+
+{% for point in reply_points %}
+{% if point.move_type == "IDENTITY_AND_PERUSAL" %}
+{{ point.point_number }}. I say that I am {% if deponent.is_organisation_representative %}the {{ deponent.designation }} of the Respondent No.{{ filing_respondent_number }}{% else %}the Respondent No.{{ filing_respondent_number }}{% endif %} in the above {{ case_type }} and am well acquainted with the facts and circumstances of the case. I have perused the Petition and the documents annexed thereto and am competent to affirm this Affidavit in Reply.
+{% elif point.move_type == "BLANKET_DENIAL" %}
+{{ point.point_number }}. At the outset, I deny each and every allegation, contention and submission made in the {{ case_type }}, save and except those specifically admitted herein. I say that the Petition is misconceived, devoid of merits and is liable to be dismissed in limine.
+{% elif point.move_type == "PRELIMINARY_POSITION" %}
+{{ point.point_number }}. I say that {{ point.content.rstrip('.') }}. The action complained of has been taken strictly in accordance with law and after following due procedure. No legal, constitutional or fundamental right of the Petitioner has been infringed.
+{% elif point.move_type == "SUBSTANTIVE_ANSWER" %}
+{{ point.point_number }}. With reference to the averments made in the Petition, I say that the same are false, incorrect and denied. {{ point.content.rstrip('.') }}. The Petitioner has failed to make out any case warranting interference in the extraordinary writ jurisdiction of this Hon'ble Court.{% if point.exhibit %} Hereto annexed and marked as {{ point.exhibit.label }} is a copy of the {{ point.exhibit.description | replace('Copy of the ', '') | replace('Copy of ', '') | replace('copy of ', '') }} addressed by the Respondent No.{{ filing_respondent_number }} to the Petitioner.{% endif %}
+
+{% elif point.move_type == "DOCUMENT_REFERENCE" %}
+{{ point.point_number }}. {{ point.content.rstrip('.') }}.{% if point.exhibit %} Hereto annexed and marked as {{ point.exhibit.label }} is a copy of the {{ point.exhibit.description | replace('Copy of the ', '') | replace('Copy of ', '') | replace('copy of ', '') }}.{% endif %}
+
+{% elif point.move_type == "CLOSING" %}
+{{ point.point_number }}. In the premises aforesaid, I say that the {{ case_type }} deserves to be dismissed with costs.
+{% endif %}
+{% endfor %}
+
+PRAYER
+
+I therefore respectfully pray that this Hon'ble Court may be pleased to:
+{% for prayer in clean_prayer_points %}
+({{ "abcdefghij"[loop.index0] }}) {{ prayer.rstrip('.;') }};{% if not loop.last %} and{% endif %}
+
+{% endfor %}
+
+{{ jurat_verb }} at {{ attestation_place }}
+On this {{ ordinal_date }}
+
+DEPONENT
+
+Before Me
+
+VERIFICATION
+
+I, {{ deponent.name }}, the Deponent above named, do hereby verify that the contents of paragraphs 1 to {{ paragraph_count }} and the Prayer above are true and correct to my knowledge and belief and that nothing material has been concealed therefrom.
+
+Verified at {{ attestation_place }} on this {{ ordinal_date }}.
+
+DEPONENT
+{% if advocate_firm %}
+
+{{ advocate_firm }}
+Advocates for the Respondent No.{{ filing_respondent_number }}.
+{% endif %}

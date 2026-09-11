@@ -1,0 +1,30 @@
+# Environment
+.env
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Generated outputs (keep in outputs/ only)
+*.docx
+!outputs/*.docx
+
+# Logs
+*.log
+
+# Node (for future React frontend)
+node_modules/
+dist/
+build/

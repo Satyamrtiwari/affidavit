@@ -1,0 +1,288 @@
+01	Affidavit	Format	Explained
+Affidavit	in	Reply	—	Bombay	High	Court,	writ	matter,	short	reply
+Dated:	05-09-2026
+An	
+Affidavit	in	Reply
+	is	a	sworn	statement	filed	by	a	respondent	to	answer	and	oppose	a	petition.	It	denies	the	petitioner's	case,	states	the	respondent's
+version,	and	asks	the	Court	to	dismiss	the	petition.	It	follows	a	fixed	skeleton,	and	almost	every	sentence	uses	a	set	phrase.
+1.	The	ten	parts
+All	ten	appear,	in	this	order.	None	are	optional.
+#
+Part
+Form
+Rules
+1
+Forum	heading
+IN	THE	HIGH	COURT	OF	JUDICATURE	AT	[CITY]
+First	line.	Bold,	caps,	centred.
+2
+Jurisdiction
+[TYPE]	JURISDICTION
+Bold,	caps,	centred.	Always	ends	with	the	word	JURISDICTION.	E.g.
+Civil	Appellate;	Ordinary	Original	Civil.
+3
+Case	number
+[PROCEEDING]	NO.	[NUMBER]	OF	[YEAR]
+Bold,	caps,	centred.	
+NO.
+	and	
+OF
+	are	fixed	words.
+4
+Cause	title
+Names	left,	status	tags	right
+Tags	begin	with	three	dots:	
+...Petitioner
+,	
+...Respondent
+No.1
+.	
+VERSUS
+	on	its	own	centred	line.	Respondents	numbered	1.,
+2.,	3.
+5
+Affidavit	title
+AFFIDAVIT	IN	REPLY	ON	BEHALF	OF	RESPONDENT	NO.
+[N]
+Bold,	caps,	centred.	Always	carries	the	respondent	number.
+6
+Deponent	clause
+I,	[NAME],	...	do	hereby	solemnly	affirm	and
+state	as	under:
+One	sentence,	not	numbered.	See	the	deponent	rule	below.
+7
+Numbered	paragraphs
+1.
+	
+2.
+	
+3.
+	...
+Number	bold,	then	full	stop.	One	continuous	sequence.	Prayer	is
+not	part	of	it.
+8
+Prayer
+(a)
+	
+(b)
+	
+(c)
+Heading	PRAYER	bold	caps.	Letters	bold.	Lettered,	never
+numbered	with	the	body.
+9
+Jurat
+Solemnly	affirmed	at	[PLACE]	/	On	this	[Nth]	day
+of	[Month]	[Year]
+DEPONENT
+	right,	caps.	
+Before	Me
+	left.	Verb	must	match	Part	6.
+10
+Verification
+...	contents	of	paragraphs	1	to	[N]	and	the
+Prayer	...
+Heading	bold	caps.	Range	must	match	the	actual	body	count.
+Place	and	date	repeat	the	jurat.
+2.	Deponent	rule	(Part	6)
+Respondent	is	a	person
+	→	that	person	deposes:	“the	Respondent	No.2	above	named”.
+Respondent	is	a	company	or	authority
+	→	an	officer	deposes	for	it:	“the	[designation]	of	the	Respondent	No.2	above	named”.	Never	write	“I	am	the
+Respondent	No.2”	for	an	organisation.
+Verb	agreement:	
+solemnly	affirm
+	→	
+Solemnly	affirmed
+;	
+swear	and	affirm
+	→	
+Sworn
+.
+3.	Paragraph	sequence	(Part	7)
+Para
+Move
+Opening	words
+1
+Identity	and	perusal
+“I	say	that	I	am	the	Respondent	No.__	in	the	above	Writ	Petition	and	am	well	acquainted	with	the	facts	and
+circumstances	of	the	case...”
+2
+Blanket	denial
+“At	the	outset,	I	deny	each	and	every	allegation,	contention	and	submission	made	in	the	Writ	Petition,	save	and
+except	those	specifically	admitted	herein...”
+3
+Preliminary	position
+“I	say	that	the	Petitioner	has	suppressed	material	facts...	The	action	complained	of	has	been	taken	strictly	in
+accordance	with	law...”
+4	onward
+Substantive	answers
+“With	reference	to	the	averments	made	in	the	Petition,	I	say	that	the	same	are	false,	incorrect	and	denied...”	—	one
+paragraph	per	point	answered
+Last
+Closing
+“In	the	premises	aforesaid,	I	say	that	the	Writ	Petition	deserves	to	be	dismissed	with	costs.”
+4.	Fixed	phrases
+Used	in
+Phrase
+Deponent	clause
+the	Respondent	No.__	above	named	·	do	hereby	solemnly	affirm	and	state	as	under:
+Paragraph	1
+am	well	acquainted	with	the	facts	and	circumstances	of	the	case	·	I	have	perused	the	Petition	and	the	documents
+annexed	thereto	·	am	competent	to	affirm	this	Affidavit	in	Reply
+Blanket	denial
+At	the	outset,	I	deny	each	and	every	allegation,	contention	and	submission	·	save	and	except	those	specifically	admitted
+herein	·	misconceived,	devoid	of	merits	and	is	liable	to	be	dismissed	in	limine
+Preliminary	position
+has	suppressed	material	facts	·	strictly	in	accordance	with	law	and	after	following	due	procedure	·	No	legal,	constitutional
+or	fundamental	right...	has	been	infringed
+Substantive	answer
+With	reference	to	the	averments	made	in	the	Petition	·	the	same	are	false,	incorrect	and	denied	·	has	failed	to	make	out
+any	case	warranting	interference	·	the	extraordinary	writ	jurisdiction	of	this	Hon'ble	Court
+Closing
+In	the	premises	aforesaid	·	deserves	to	be	dismissed	with	costs
+Prayer
+I	therefore	respectfully	pray	that	this	Hon'ble	Court	may	be	pleased	to:	·	grant	such	other	and	further	reliefs	as	this
+Hon'ble	Court	may	deem	fit	and	proper
+Verification
+true	and	correct	to	my	knowledge	and	belief	·	nothing	material	has	been	concealed	therefrom
+Date	format:
+	ordinal	day	+	month	+	year	—	
+5th	day	of	September	2026
+.
+5.	Formatting
+Element
+Format
+Forum	heading,	jurisdiction,	case	number,	affidavit	title
+Bold,	ALL	CAPS,	centred
+PRAYER,	VERIFICATION	headings
+Bold,	ALL	CAPS,	centred
+Cause	title	party	names
+Normal,	left
+Status	tags	(
+...Petitioner
+)
+Right-aligned
+VERSUS
+Centred,	own	line
+Paragraph	numbers,	prayer	letters
+Bold
+Paragraph	text
+Normal,	justified
+DEPONENT
+ALL	CAPS,	right-aligned
+Before	Me
+Normal,	left-aligned
+Two	rules	that	must	never	break
+1.	Verification	verb	in	Part	6	matches	the	jurat	verb	in	Part	9.
+2.	Paragraph	range	in	Part	10	matches	the	actual	number	of	body	paragraphs.	If	the	body	has	6	paragraphs	it	reads	“paragraphs	1	to	6”.	Copying	“1	to	5”
+from	a	sample	is	an	error.
+6.	Entities	to	extract
+Entity
+Meaning
+Example
+FORUM	/	CITY
+The	court	and	its	seat
+High	Court	of	Judicature	at	Bombay	/	Bombay
+JURISDICTION_TYPE
+Side	of	the	court
+Civil	Appellate	Jurisdiction
+CASE_TYPE	/	CASE_NUMBER	/	YEAR
+The	proceeding
+Writ	Petition	/	3147	/	2026
+PETITIONER
+Party	who	filed	the	petition
+Arjun	Mehta
+RESPONDENT
+Party	answering
+Rohan	Deshpande
+RESPONDENT_NUMBER
+Which	respondent	is	replying
+Respondent	No.	2
+DEPONENT
+Person	swearing	the	affidavit
+Rohan	Deshpande
+CAPACITY
+Deponent's	role,	if	not	the	party	himself
+Deputy	Metropolitan	Commissioner
+ORGANISATION
+Company	or	authority	party
+Mumbai	Metropolitan	Region	Development	Authority
+ADDRESS	/	AGE	/	OCCUPATION
+Deponent	details
+Bandra	East,	Mumbai	/	42	years	/	Business
+VERIFICATION_VERB
+affirm	or	swear
+solemnly	affirm
+PLACE_OF_ATTESTATION	/	DATE
+Where	and	when	sworn
+Mumbai	/	5	September	2026
+PARAGRAPH_COUNT
+Number	of	body	paragraphs
+5
+7.	Reply	moves
+Move
+What	it	does
+IDENTITY_AND_PERUSAL
+Who	the	deponent	is,	that	he	has	read	the	petition,	and	that	he	is	competent	to	reply
+BLANKET_DENIAL
+Denies	everything	not	specifically	admitted
+PRELIMINARY_POSITION
+Petition	is	misconceived;	the	action	taken	was	lawful
+SUBSTANTIVE_ANSWER
+Answers	a	specific	allegation
+CLOSING
+Petition	deserves	dismissal	with	costs
+PRAYER_TO_DISMISS
+Formal	request	to	the	Court
+8.	Fill-in	template
+IN	THE	HIGH	COURT	OF	JUDICATURE	AT	[CITY]
+[TYPE]	JURISDICTION
+[PROCEEDING	TYPE]	NO.	[NUMBER]	OF	[YEAR]
+[PETITIONER	NAME,	description,	address]																	...Petitioner
+																												VERSUS
+1.	[RESPONDENT	1	NAME,	description,	address]												...Respondent	No.1
+2.	[RESPONDENT	2	NAME,	description,	address]												...Respondent	No.2
+AFFIDAVIT	IN	REPLY	ON	BEHALF	OF	RESPONDENT	NO.	[N]
+I,	[DEPONENT	NAME],	[age	/	designation],	[residing	at	/	having	office	at]
+[ADDRESS],	[the	Respondent	No.[N]	above	named	/	the	[DESIGNATION]	of	the
+Respondent	No.[N]	above	named],	do	hereby	solemnly	affirm	and	state	as	under:
+1.		I	say	that	I	am	[the	Respondent	No.[N]	/	the	[DESIGNATION]	of	the
+				Respondent	No.[N]]	in	the	above	[PROCEEDING	TYPE]	and	am	well	acquainted
+				with	the	facts	and	circumstances	of	the	case.	I	have	perused	the	Petition
+				and	the	documents	annexed	thereto	and	am	competent	to	affirm	this
+				Affidavit	in	Reply.
+2.		At	the	outset,	I	deny	each	and	every	allegation,	contention	and	submission
+				made	in	the	[PROCEEDING	TYPE],	save	and	except	those	specifically	admitted
+				herein.	I	say	that	the	Petition	is	misconceived,	devoid	of	merits	and	is
+				liable	to	be	dismissed	in	limine.
+3.		I	say	that	[preliminary	position].	The	action	complained	of	has	been	taken
+				strictly	in	accordance	with	law	and	after	following	due	procedure.	No
+				legal,	constitutional	or	fundamental	right	of	the	Petitioner	has	been
+				infringed.
+4.		With	reference	to	[the	averments	made	in	the	Petition	/	the	specific
+				allegation],	I	say	that	[substantive	answer].
+[N].	In	the	premises	aforesaid,	I	say	that	the	[PROCEEDING	TYPE]	deserves	to
+					be	dismissed	with	costs.
+PRAYER
+I	therefore	respectfully	pray	that	this	Hon'ble	Court	may	be	pleased	to:
+(a)		dismiss	the	present	[PROCEEDING	TYPE]	with	costs;
+(b)		refuse	any	interim	or	ad-interim	relief	sought	by	the	Petitioner;	and
+(c)		grant	such	other	and	further	reliefs	as	this	Hon'ble	Court	may	deem	fit
+					and	proper	in	the	facts	and	circumstances	of	the	case.
+Solemnly	affirmed	at	[PLACE]
+On	this	[Nth]	day	of	[MONTH]	[YEAR]
+																																																								DEPONENT
+Before	Me
+VERIFICATION
+I,	[DEPONENT	NAME],	the	Deponent	above	named,	do	hereby	verify	that	the
+contents	of	paragraphs	1	to	[N]	and	the	Prayer	above	are	true	and	correct	to
+my	knowledge	and	belief	and	that	nothing	material	has	been	concealed
+therefrom.
+Verified	at	[PLACE]	on	this	[Nth]	day	of	[MONTH]	[YEAR].
+																																																								DEPONENT
+9.	Not	covered	here
+The	sample	does	not	contain	these,	so	no	format	is	prescribed:	exhibit	references	·	advocate	/	drafting	block	·	para-wise	reply	·	tribunal	and	board	formats	(
+BEFORE
+THE...
+)	·	statutory	citations,	case-law	citations,	monetary	amounts.
+01	Affidavit	Format	Explained	—	Affidavit	in	Reply,	Bombay	High	Court	writ	format	·	version	1.0
