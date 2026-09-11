@@ -25,6 +25,22 @@ class PartyInfo(BaseModel):
         description="Representative, e.g. 'Through the Principal Secretary'"
     )
 
+    @property
+    def clean_through(self) -> Optional[str]:
+        if not self.through:
+            return None
+        import re
+        t = self.through.strip().rstrip('.')
+        if re.match(r'^through\s+', t, re.IGNORECASE):
+            t = t[7:].strip()
+        return f"Through {t}"
+
+    @property
+    def clean_address(self) -> Optional[str]:
+        if not self.address:
+            return None
+        return self.address.strip().rstrip('.')
+
 
 class RespondentInfo(BaseModel):
     """Information about a respondent party."""
@@ -40,6 +56,22 @@ class RespondentInfo(BaseModel):
         None,
         description="Representative, e.g. 'Through the Principal Secretary'"
     )
+
+    @property
+    def clean_through(self) -> Optional[str]:
+        if not self.through:
+            return None
+        import re
+        t = self.through.strip().rstrip('.')
+        if re.match(r'^through\s+', t, re.IGNORECASE):
+            t = t[7:].strip()
+        return f"Through {t}"
+
+    @property
+    def clean_address(self) -> Optional[str]:
+        if not self.address:
+            return None
+        return self.address.strip().rstrip('.')
 
 
 class DeponentInfo(BaseModel):
@@ -74,6 +106,10 @@ class DeponentInfo(BaseModel):
         "solemnly affirm",
         description="The verb used in the oath — must match the jurat"
     )
+
+    @property
+    def clean_address(self) -> str:
+        return self.address.strip().rstrip('.')
 
 
 class ExhibitInfo(BaseModel):
@@ -110,6 +146,95 @@ class ReplyPoint(BaseModel):
         None,
         description="Exhibit reference if this paragraph refers to a document"
     )
+
+    @property
+    def clean_content(self) -> str:
+        """
+        Clean content by stripping leading 'I say that' and ensuring proper capitalization.
+        """
+        import re
+        c = self.content.strip().rstrip(".")
+        c = re.sub(r"^I\s+say\s+that,?\s*", "", c, flags=re.IGNORECASE).strip()
+        if c:
+            c = c[0].upper() + c[1:]
+        return c
+
+    @property
+    def is_exhibit_already_annexed(self) -> bool:
+        """Check if content already mentions 'annexed and marked as' or 'marked as EXHIBIT'."""
+        import re
+        return bool(re.search(r"(?:annexed\s+(?:hereto\s+)?and\s+marked\s+as|marked\s+as)\s+EXHIBIT", self.content, re.IGNORECASE))
+
+    def format_for_display(self, entities: "CaseEntities") -> str:
+        """
+        Format the reply point cleanly:
+        - If the content is already drafted as a complete first-person legal paragraph, preserve it faithfully.
+        - Avoid unnecessary rule-based overwriting of case-specific facts.
+        - If the content is a raw summary/stub, expand it into standard Bombay High Court phrasing.
+        - Ensure proper exhibit annexure without duplicate mentions.
+        """
+        import re
+        content = self.content.strip().rstrip('.')
+
+        # Check if content already contains an exhibit marking
+        has_exhibit_mention = bool(re.search(
+            r'(?:annexed\s+(?:hereto\s+)?and\s+marked\s+as|marked\s+as)\s+EXHIBIT',
+            content,
+            re.IGNORECASE
+        ))
+
+        # Check if point already has full drafted text
+        if self.move_type == "IDENTITY_AND_PERUSAL":
+            if ("well acquainted" in content.lower() or "well conversant" in content.lower()) and ("competent" in content.lower() or "read the contents" in content.lower() or "perused" in content.lower()):
+                text = content
+            else:
+                if entities.deponent.is_organisation_representative:
+                    text = f"I say that I am the {entities.deponent.designation} of the Respondent No.{entities.filing_respondent_number} in the above {entities.case_type} and am well acquainted with the facts and circumstances of the case. I have perused the Petition and the documents annexed thereto and am competent to affirm this Affidavit in Reply."
+                else:
+                    text = f"I say that I am the Respondent No.{entities.filing_respondent_number} in the above {entities.case_type} and am well acquainted with the facts and circumstances of the case. I have perused the Petition and the documents annexed thereto and am competent to affirm this Affidavit in Reply."
+
+        elif self.move_type == "BLANKET_DENIAL":
+            if "save and except" in content.lower() and ("traversed" in content.lower() or "dismissed" in content.lower() or "specifically admitted" in content.lower()):
+                text = content
+            else:
+                text = f"At the outset, I deny each and every allegation, contention and submission made in the {entities.case_type}, save and except those specifically admitted herein. I say that the Petition is misconceived, devoid of merits and is liable to be dismissed in limine."
+
+        elif self.move_type == "CLOSING":
+            if "dismissed" in content.lower() and ("article 226" in content.lower() or "in view of" in content.lower() or "premises" in content.lower()):
+                text = content
+            else:
+                text = f"In the premises aforesaid, I say that the {entities.case_type} deserves to be dismissed with costs."
+
+        elif self.move_type == "DOCUMENT_REFERENCE":
+            if not re.match(r'^(I\s+say\s+that|I\s+crave\s+leave|Respondent\s+No)', content, re.IGNORECASE):
+                c_text = content
+                if c_text.startswith("The "):
+                    c_text = "the " + c_text[4:]
+                text = f"I say that {c_text}"
+            else:
+                text = content
+
+        else:
+            # Substantive Answer or Preliminary Position
+            if re.match(r'^(I\s+say\s+that|I\s+deny|I\s+submit|With\s+reference\s+to)', content, re.IGNORECASE):
+                text = content
+            else:
+                c_text = content
+                if c_text.startswith("The "):
+                    c_text = "the " + c_text[4:]
+                text = f"I say that {c_text}"
+
+        # Exhibit annexure
+        if self.exhibit and not has_exhibit_mention:
+            desc = self.exhibit.description
+            for pfx in ('Copy of the ', 'Copy of ', 'copy of the ', 'copy of '):
+                if desc.startswith(pfx):
+                    desc = desc[len(pfx):]
+            text = f"{text.rstrip('.')}. Hereto annexed and marked as {self.exhibit.label} is a copy of the {desc}."
+        else:
+            text = f"{text.rstrip('.')}."
+
+        return text
 
 
 class CaseEntities(BaseModel):
@@ -231,13 +356,21 @@ class CaseEntities(BaseModel):
     def clean_prayer_points(self) -> list[str]:
         """
         Normalize prayer points to follow 'may be pleased to: (a) ...' syntax.
-        Converts third-person phrasing ('Respondent No. 2 prays that the Writ Petition be dismissed with costs')
-        into direct prayer clauses ('dismiss the present Writ Petition with costs').
+        Strips preambles, converts third-person phrasing into direct action verbs,
+        ensures lowercase initial letters, and prevents duplicate relief clauses.
         """
         import re
         cleaned = []
         for p in self.prayer_points:
             pt = p.strip().rstrip(".;")
+            # Strip preambles like "It is respectfully prayed that this Hon'ble Court may be pleased to"
+            pt = re.sub(
+                r"^(?:It\s+is\s+respectfully\s+prayed\s+that\s+this\s+Hon'?ble\s+Court\s+may\s+be\s+pleased\s+to\s+)",
+                "",
+                pt,
+                flags=re.IGNORECASE
+            ).strip()
+
             m = re.match(r"^(?:(?:the\s+)?Respondent\s+No\.?\s*\d+\s+)?prays\s+that\s+(.*)", pt, re.IGNORECASE)
             if m:
                 rest = m.group(1).strip()
@@ -250,10 +383,19 @@ class CaseEntities(BaseModel):
                     )
                 else:
                     pt = rest
-            cleaned.append(pt)
 
-        if len(cleaned) == 1 and "dismiss" in cleaned[0].lower():
+            if pt:
+                # Lowercase first character for clean sub-clause formatting
+                pt = pt[0].lower() + pt[1:]
+                cleaned.append(pt)
+
+        # Append standard High Court prayers if not already present
+        has_interim = any("interim" in c.lower() for c in cleaned)
+        has_general = any("other and further" in c.lower() or "fit and proper" in c.lower() for c in cleaned)
+
+        if not has_interim:
             cleaned.append("refuse any interim or ad-interim relief sought by the Petitioner")
+        if not has_general:
             cleaned.append("grant such other and further reliefs as this Hon'ble Court may deem fit and proper in the facts and circumstances of the case")
 
         return cleaned

@@ -56,7 +56,7 @@
       "check_id": "respondent_number_consistency",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "All 3 mentions consistently use Respondent No.2",
+      "message": "All 4 respondent mentions correspond to valid respondents with Respondent No.2 as filing party",
       "details": null,
       "source_reference": null
     },
@@ -92,7 +92,7 @@
       "check_id": "deponent_type_match",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "Deponent type correctly matches: Individual respondent",
+      "message": "Deponent type correctly matches: Organisation representative",
       "details": null,
       "source_reference": null
     },
@@ -120,5 +120,5 @@
   "total_checks": 7,
   "issues_detected": [],
   "scoring_methodology": "Scoring is based on 6 weighted dimensions, each scored 0-100:\n- Entity Accuracy: weight 20%\n- Completeness: weight 20%\n- Structure: weight 20%\n- Consistency: weight 15%\n- Template Fidelity: weight 15%\n- Hallucination Check: weight 10%\n\nOverall score = sum of (dimension_score × weight/100) for all dimensions.\nAll 7 checks are deterministic (no LLM dependency).\nHIGH severity failures incur a 20-point penalty on the dimension score.\nMEDIUM severity failures incur a 10-point penalty.",
-  "generated_at": "2026-09-11T20:57:48.898680"
+  "generated_at": "2026-09-11T22:41:03.215148"
 }

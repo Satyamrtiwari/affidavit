@@ -88,6 +88,10 @@ def clean_text(raw_text: str) -> str:
     # Normalize line endings
     text = text.replace("\r\n", "\n").replace("\r", "\n")
 
+    # Normalize smart quotes and dashes
+    text = text.replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
+    text = text.replace("–", "-").replace("—", "-")
+
     # Fix common PDF word-break artifacts where a space is inserted
     # before the last 1-2 characters of a word (e.g., "BOMBA Y" → "BOMBAY")
     # Pattern: uppercase word fragment + space + 1-2 uppercase chars at word boundary

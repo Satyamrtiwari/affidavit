@@ -53,3 +53,21 @@ def test_download_endpoints(client):
     # Test report download
     response_report = client.get("/api/download/report?format=json")
     assert response_report.status_code in (200, 404)
+
+
+def test_generate_endpoint_with_empty_reference_doc_field(client):
+    case_pdf = REFERENCE_DOCS_DIR / "03_Case_Information.pdf"
+    if not case_pdf.exists():
+        pytest.skip("Reference PDF not found")
+
+    with open(case_pdf, "rb") as f:
+        # Simulate Swagger sending empty string for optional reference_doc
+        response = client.post(
+            "/api/generate",
+            files={"case_info": ("03_Case_Information.pdf", f, "application/pdf")},
+            data={"reference_doc": ""}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+

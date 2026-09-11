@@ -15,6 +15,7 @@ from pathlib import Path
 from io import BytesIO
 from contextlib import asynccontextmanager
 
+from typing import Union, Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -90,7 +91,7 @@ async def health_check():
 @app.post("/api/generate")
 async def generate_affidavit(
     case_info: UploadFile = File(..., description="Case Information PDF (mandatory)"),
-    reference_doc: UploadFile = File(None, description="Reference Document PDF (optional)"),
+    reference_doc: Union[UploadFile, str, None] = File(None, description="Reference Document PDF (optional)"),
 ):
     """
     Full pipeline: Upload case info PDF → Extract entities → Generate affidavit → Evaluate.
@@ -120,11 +121,12 @@ async def generate_affidavit(
         )
 
     reference_text = None
-    if reference_doc:
+    if isinstance(reference_doc, UploadFile) and reference_doc.filename:
         try:
             ref_bytes = await reference_doc.read()
-            reference_text = parse_pdf(ref_bytes)
-            logger.info(f"Parsed reference doc: {len(reference_text)} chars")
+            if ref_bytes:
+                reference_text = parse_pdf(ref_bytes)
+                logger.info(f"Parsed reference doc: {len(reference_text)} chars")
         except Exception as e:
             logger.warning(f"Failed to parse reference doc, using default template: {e}")
 

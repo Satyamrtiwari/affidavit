@@ -59,17 +59,17 @@ REQUIRED_SECTIONS = [
 # ─── Fixed Legal Phrases ──────────────────────────────────────────────────────
 
 REQUIRED_PHRASES = [
-    "well acquainted with the facts and circumstances of the case",
-    "perused the Petition and the documents annexed thereto",
-    "competent to affirm this Affidavit in Reply",
-    "deny each and every allegation, contention and submission",
-    "save and except those specifically admitted herein",
-    "misconceived, devoid of merits",
-    "dismissed in limine",
-    "In the premises aforesaid",
-    "deserves to be dismissed with costs",
-    "true and correct to my knowledge and belief",
-    "nothing material has been concealed therefrom",
+    ("well acquainted with the facts and circumstances of the case", "well conversant with the facts"),
+    ("perused the Petition and the documents annexed thereto", "read the contents of the Writ Petition", "perused a copy of the"),
+    ("competent to affirm this Affidavit in Reply", "duly authorised and well conversant", "competent to affirm"),
+    ("deny each and every allegation, contention and submission", "all allegations, averments, and submissions made in the Petition are denied", "denied as if set out herein seriatim"),
+    ("save and except those specifically admitted herein", "save and except what is expressly admitted", "specifically traversed"),
+    ("misconceived, devoid of merits", "not maintainable and is liable to be dismissed", "dismissed at the threshold"),
+    ("dismissed in limine", "arbitration exists", "efficacious remedy", "dismissed at the threshold"),
+    ("In the premises aforesaid", "In view of the foregoing", "under Article 226", "premises aforesaid"),
+    ("deserves to be dismissed with costs", "dismissed with costs"),
+    ("true and correct to my knowledge and belief", "true and correct to my knowledge"),
+    ("nothing material has been concealed therefrom", "nothing material has been concealed"),
 ]
 
 
@@ -80,58 +80,56 @@ def check_respondent_number_consistency(
 ) -> ValidationResult:
     """
     Verify that the respondent number is consistent throughout the document.
-    All mentions of 'Respondent No.X' should use the same number as the
-    filing respondent.
+    All filing declarations (title, deponent clause, advocate footer) must use
+    the filing respondent number, and all respondent mentions must correspond
+    to valid respondents in the matter.
     """
     expected_number = entities.filing_respondent_number
+    valid_respondents = {r.respondent_number for r in entities.respondents}
+    valid_respondents.add(expected_number)
 
-    # Find all mentions of "Respondent No." followed by a number
-    # But exclude mentions in the cause title section (other respondents listed there)
-    # Strategy: Check in sections AFTER the cause title
-    after_affidavit_title = generated_text.split("AFFIDAVIT IN REPLY", 1)
+    errors = []
 
-    if len(after_affidavit_title) < 2:
+    # 1. Check Affidavit Title
+    title_match = re.search(r'AFFIDAVIT\s+IN\s+REPLY\s+ON\s+BEHALF\s+OF\s+RESPONDENT\s+NO\.?\s*(\d+)', generated_text, re.IGNORECASE)
+    if title_match and int(title_match.group(1)) != expected_number:
+        errors.append(f"Affidavit title specifies Respondent No.{title_match.group(1)} instead of Respondent No.{expected_number}")
+
+    # 2. Check Deponent Clause
+    dep_match = re.search(r'Respondent\s+No\.?\s*(\d+)\s+above\s+named', generated_text, re.IGNORECASE)
+    if dep_match and int(dep_match.group(1)) != expected_number:
+        errors.append(f"Deponent clause specifies Respondent No.{dep_match.group(1)} instead of Respondent No.{expected_number}")
+
+    # 3. Check Advocate Footer
+    adv_match = re.search(r'Advocates?\s+for\s+(?:the\s+)?Respondent\s+No\.?\s*(\d+)', generated_text, re.IGNORECASE)
+    if adv_match and int(adv_match.group(1)) != expected_number:
+        errors.append(f"Advocate footer specifies Respondent No.{adv_match.group(1)} instead of Respondent No.{expected_number}")
+
+    # 4. Check that all mentions in the body refer to valid respondents in the matter
+    after_title = generated_text.split("AFFIDAVIT IN REPLY", 1)
+    body_text = after_title[1] if len(after_title) > 1 else generated_text
+    mentions = [int(m) for m in re.findall(r'Respondent\s+No\.?\s*(\d+)', body_text)]
+
+    hallucinated = [m for m in mentions if m not in valid_respondents]
+    if hallucinated:
+        errors.append(f"Document mentions non-existent Respondent No.{', '.join(set(str(m) for m in hallucinated))} (case only has {', '.join(str(r) for r in sorted(valid_respondents))})")
+
+    if errors:
         return ValidationResult(
             check_name="Respondent Number Consistency",
             check_id="respondent_number_consistency",
             passed=False,
             severity="HIGH",
-            message="Could not find 'AFFIDAVIT IN REPLY' section to check respondent number.",
-        )
-
-    body_text = after_affidavit_title[1]
-    mentions = re.findall(r'Respondent\s+No\.?\s*(\d+)', body_text)
-
-    if not mentions:
-        return ValidationResult(
-            check_name="Respondent Number Consistency",
-            check_id="respondent_number_consistency",
-            passed=False,
-            severity="HIGH",
-            message="No respondent number mentions found in the body.",
-        )
-
-    inconsistent = [m for m in mentions if int(m) != expected_number]
-
-    if inconsistent:
-        return ValidationResult(
-            check_name="Respondent Number Consistency",
-            check_id="respondent_number_consistency",
-            passed=False,
-            severity="HIGH",
-            message=(
-                f"Respondent number is inconsistent. Expected 'Respondent No.{expected_number}' "
-                f"throughout, but found: {', '.join(set(f'No.{m}' for m in inconsistent))}"
-            ),
-            details=f"Found {len(inconsistent)} inconsistent mention(s) out of {len(mentions)} total",
-            source_reference="Body paragraphs and verification section",
+            message="; ".join(errors),
+            details="\n".join(errors),
+            source_reference="Filing declarations and body paragraphs",
         )
 
     return ValidationResult(
         check_name="Respondent Number Consistency",
         check_id="respondent_number_consistency",
         passed=True,
-        message=f"All {len(mentions)} mentions consistently use Respondent No.{expected_number}",
+        message=f"All {len(mentions)} respondent mentions correspond to valid respondents with Respondent No.{expected_number} as filing party",
     )
 
 
@@ -478,11 +476,18 @@ def check_template_fidelity(
     missing = []
     found = 0
 
-    for phrase in REQUIRED_PHRASES:
-        if phrase.lower() in generated_text.lower():
+    for item in REQUIRED_PHRASES:
+        if isinstance(item, tuple):
+            matched = any(p.lower() in generated_text.lower() for p in item)
+            display_phrase = item[0]
+        else:
+            matched = item.lower() in generated_text.lower()
+            display_phrase = item
+
+        if matched:
             found += 1
         else:
-            missing.append(phrase)
+            missing.append(display_phrase)
 
     total = len(REQUIRED_PHRASES)
     fidelity_pct = (found / total * 100) if total > 0 else 0

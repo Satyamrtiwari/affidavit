@@ -62,6 +62,20 @@ def generate_text(entities: CaseEntities) -> str:
     context["jurat_verb"] = entities.jurat_verb
     context["ordinal_date"] = entities.ordinal_date
 
+    # Add clean entity properties
+    context["petitioner"]["clean_through"] = entities.petitioner.clean_through
+    context["petitioner"]["clean_address"] = entities.petitioner.clean_address
+    for r_dict, r_obj in zip(context["respondents"], entities.respondents):
+        r_dict["clean_through"] = r_obj.clean_through
+        r_dict["clean_address"] = r_obj.clean_address
+    context["deponent"]["clean_address"] = entities.deponent.clean_address
+
+    # Add formatted reply points
+    context["formatted_points"] = [
+        {"point_number": p.point_number, "text": p.format_for_display(entities)}
+        for p in entities.reply_points
+    ]
+
     rendered = template.render(**context)
 
     # Clean up excessive blank lines from template rendering
@@ -99,6 +113,14 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
     style.font.size = Pt(12)
     style.paragraph_format.space_after = Pt(6)
     style.paragraph_format.line_spacing = 1.15
+    try:
+        from docx.oxml.ns import qn
+        rFonts = style.element.rPr.get_or_add_rFonts()
+        rFonts.set(qn("w:ascii"), "Times New Roman")
+        rFonts.set(qn("w:hAnsi"), "Times New Roman")
+        rFonts.set(qn("w:cs"), "Times New Roman")
+    except Exception:
+        pass
 
     # ─── Helper functions ─────────────────────────────────────────────────
     def add_centered_bold_caps(text: str, space_before: int = 0, space_after: int = 6):
@@ -166,13 +188,15 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
     pet = entities.petitioner
     pet_text = pet.name
     if pet.description:
-        pet_text += f", {pet.description}"
-    if pet.address:
-        pet_text += f",\nresiding at {pet.address}."
-    if pet.through:
-        pet_text += f"\nThrough {pet.through}."
+        pet_text += f", {pet.description.rstrip('.')}"
+    if pet.clean_address and (not pet.description or pet.clean_address not in pet.description):
+        pet_text += f",\nhaving registered office at {pet.clean_address}"
+    if pet.clean_through:
+        pet_text += f"\n{pet.clean_through}."
+    else:
+        pet_text = pet_text.rstrip('.') + "."
 
-    p = add_normal_text(pet_text, alignment=WD_ALIGN_PARAGRAPH.LEFT)
+    add_normal_text(pet_text, alignment=WD_ALIGN_PARAGRAPH.LEFT)
     add_right_aligned("...Petitioner")
 
     # VERSUS
@@ -180,14 +204,15 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
 
     # Respondents
     for resp in entities.respondents:
-        resp_text = f"{resp.respondent_number}. {resp.name}"
+        resp_text = f"{resp.respondent_number}. {resp.name.rstrip('.')}"
         if resp.description:
-            resp_text += f", {resp.description}"
-        if resp.through:
-            resp_text += f",\n   Through {resp.through}"
-        if resp.address:
-            resp_text += f",\n   {resp.address}"
-        resp_text += "."
+            resp_text += f", {resp.description.rstrip('.')}"
+        if resp.clean_through:
+            resp_text += f",\n   {resp.clean_through}"
+        if resp.clean_address and (not resp.description or resp.clean_address not in resp.description):
+            addr_lead = "having office at" if resp.is_organisation else "residing at"
+            resp_text += f",\n   {addr_lead} {resp.clean_address}"
+        resp_text = resp_text.rstrip('.') + "."
 
         add_normal_text(resp_text, alignment=WD_ALIGN_PARAGRAPH.LEFT)
         add_right_aligned(f"...Respondent No.{resp.respondent_number}")
@@ -203,19 +228,19 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
     dep = entities.deponent
     if dep.is_organisation_representative:
         deponent_text = (
-            f"I, {dep.name}, {dep.designation}, having office at {dep.address}, "
+            f"I, {dep.name}, having office at {dep.clean_address}, "
             f"the {dep.designation} of the Respondent No.{entities.filing_respondent_number} "
             f"above named, do hereby {dep.verification_verb} and state as under:"
         )
     else:
         parts = [f"I, {dep.name}"]
         if dep.age:
-            parts.append(f"Age {dep.age}")
+            parts.append(f"Age {dep.age.rstrip('.')}")
         if dep.occupation:
-            parts.append(f"Occupation: {dep.occupation}")
+            parts.append(f"Occupation: {dep.occupation.rstrip('.')}")
         parts_text = ", ".join(parts)
         deponent_text = (
-            f"{parts_text}, residing at {dep.address}, "
+            f"{parts_text}, residing at {dep.clean_address}, "
             f"the Respondent No.{entities.filing_respondent_number} above named, "
             f"do hereby {dep.verification_verb} and state as under:"
         )
@@ -224,77 +249,7 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
 
     # ─── Part 7: Numbered Paragraphs ──────────────────────────────────────
     for point in entities.reply_points:
-        if point.move_type == "IDENTITY_AND_PERUSAL":
-            role = (
-                f"the {dep.designation} of the Respondent No.{entities.filing_respondent_number}"
-                if dep.is_organisation_representative
-                else f"the Respondent No.{entities.filing_respondent_number}"
-            )
-            para_text = (
-                f"I say that I am {role} in the above {entities.case_type} "
-                f"and am well acquainted with the facts and circumstances of the case. "
-                f"I have perused the Petition and the documents annexed thereto "
-                f"and am competent to affirm this Affidavit in Reply."
-            )
-
-        elif point.move_type == "BLANKET_DENIAL":
-            para_text = (
-                f"At the outset, I deny each and every allegation, contention and submission "
-                f"made in the {entities.case_type}, save and except those specifically admitted "
-                f"herein. I say that the Petition is misconceived, devoid of merits and is "
-                f"liable to be dismissed in limine."
-            )
-
-        elif point.move_type == "PRELIMINARY_POSITION":
-            para_text = (
-                f"I say that {point.content.rstrip('.')}. The action complained of has been taken "
-                f"strictly in accordance with law and after following due procedure. "
-                f"No legal, constitutional or fundamental right of the Petitioner has been infringed."
-            )
-
-        elif point.move_type == "SUBSTANTIVE_ANSWER":
-            para_text = (
-                f"With reference to the averments made in the Petition, I say that "
-                f"the same are false, incorrect and denied. {point.content.rstrip('.')}. "
-                f"The Petitioner has failed to make out any case warranting interference "
-                f"in the extraordinary writ jurisdiction of this Hon'ble Court."
-            )
-            if point.exhibit:
-                desc = (
-                    point.exhibit.description
-                    .replace("Copy of the ", "")
-                    .replace("Copy of ", "")
-                    .replace("copy of ", "")
-                )
-                para_text += (
-                    f" Hereto annexed and marked as {point.exhibit.label} is a copy of "
-                    f"the {desc} addressed by the Respondent "
-                    f"No.{entities.filing_respondent_number} to the Petitioner."
-                )
-
-        elif point.move_type == "DOCUMENT_REFERENCE":
-            para_text = point.content.rstrip(".")
-            if point.exhibit:
-                desc = (
-                    point.exhibit.description
-                    .replace("Copy of the ", "")
-                    .replace("Copy of ", "")
-                    .replace("copy of ", "")
-                )
-                para_text += (
-                    f" Hereto annexed and marked as {point.exhibit.label} is a copy of "
-                    f"the {desc}."
-                )
-
-        elif point.move_type == "CLOSING":
-            para_text = (
-                f"In the premises aforesaid, I say that the {entities.case_type} "
-                f"deserves to be dismissed with costs."
-            )
-
-        else:
-            para_text = point.content
-
+        para_text = point.format_for_display(entities)
         add_numbered_paragraph(point.point_number, para_text)
 
     # ─── Part 8: Prayer ───────────────────────────────────────────────────

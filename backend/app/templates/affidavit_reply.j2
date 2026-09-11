@@ -12,39 +12,27 @@ IN THE HIGH COURT OF JUDICATURE AT {{ forum_city }}
 
 {{ case_type }} NO. {{ case_number }} OF {{ year }}
 
-{% if petitioner.description %}{{ petitioner.name }}, {{ petitioner.description }},{% else %}{{ petitioner.name }},{% endif %}
+{{ petitioner.name }}{% if petitioner.description %}, {{ petitioner.description.rstrip('.') }}{% endif %}{% if petitioner.clean_address and petitioner.clean_address not in (petitioner.description or '') %}, having registered office at {{ petitioner.clean_address }}{% endif %}
 
-{% if petitioner.address %}residing at {{ petitioner.address }}.{% endif %}
-{% if petitioner.through %}Through {{ petitioner.through }}.{% endif %}
+{% if petitioner.clean_through %}
+{{ petitioner.clean_through }}.
+{% endif %}
 ...Petitioner
 
 VERSUS
 
 {% for respondent in respondents %}
-{{ respondent.respondent_number }}. {% if respondent.through %}{{ respondent.name }}, Through {{ respondent.through }}, {{ respondent.address | default('') }}.{% else %}{{ respondent.name }}{% if respondent.description %}, {{ respondent.description }}{% endif %}{% if respondent.address %}, residing at {{ respondent.address }}{% endif %}.{% endif %}
+{{ respondent.respondent_number }}. {{ respondent.name.rstrip('.') }}{% if respondent.description %}, {{ respondent.description.rstrip('.') }}{% endif %}{% if respondent.clean_through %}, {{ respondent.clean_through }}{% endif %}{% if respondent.clean_address and respondent.clean_address not in (respondent.description or '') %}, {% if respondent.is_organisation %}having office at{% else %}residing at{% endif %} {{ respondent.clean_address }}{% endif %}.
 ...Respondent No.{{ respondent.respondent_number }}
 {% endfor %}
 
 AFFIDAVIT IN REPLY ON BEHALF OF RESPONDENT NO. {{ filing_respondent_number }}
 
-{% if deponent.is_organisation_representative %}I, {{ deponent.name }}, {{ deponent.designation }}, having office at {{ deponent.address }}, the {{ deponent.designation }} of the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% else %}I, {{ deponent.name }}, {% if deponent.age %}Age {{ deponent.age }}, {% endif %}{% if deponent.occupation %}Occupation: {{ deponent.occupation }}, {% endif %}residing at {{ deponent.address }}, the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% endif %}
+{% if deponent.is_organisation_representative %}I, {{ deponent.name }}, having office at {{ deponent.clean_address }}, the {{ deponent.designation }} of the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% else %}I, {{ deponent.name }}, {% if deponent.age %}Age {{ deponent.age.rstrip('.') }}, {% endif %}{% if deponent.occupation %}Occupation: {{ deponent.occupation.rstrip('.') }}, {% endif %}residing at {{ deponent.clean_address }}, the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% endif %}
 
-{% for point in reply_points %}
-{% if point.move_type == "IDENTITY_AND_PERUSAL" %}
-{{ point.point_number }}. I say that I am {% if deponent.is_organisation_representative %}the {{ deponent.designation }} of the Respondent No.{{ filing_respondent_number }}{% else %}the Respondent No.{{ filing_respondent_number }}{% endif %} in the above {{ case_type }} and am well acquainted with the facts and circumstances of the case. I have perused the Petition and the documents annexed thereto and am competent to affirm this Affidavit in Reply.
-{% elif point.move_type == "BLANKET_DENIAL" %}
-{{ point.point_number }}. At the outset, I deny each and every allegation, contention and submission made in the {{ case_type }}, save and except those specifically admitted herein. I say that the Petition is misconceived, devoid of merits and is liable to be dismissed in limine.
-{% elif point.move_type == "PRELIMINARY_POSITION" %}
-{{ point.point_number }}. I say that {{ point.content.rstrip('.') }}. The action complained of has been taken strictly in accordance with law and after following due procedure. No legal, constitutional or fundamental right of the Petitioner has been infringed.
-{% elif point.move_type == "SUBSTANTIVE_ANSWER" %}
-{{ point.point_number }}. With reference to the averments made in the Petition, I say that the same are false, incorrect and denied. {{ point.content.rstrip('.') }}. The Petitioner has failed to make out any case warranting interference in the extraordinary writ jurisdiction of this Hon'ble Court.{% if point.exhibit %} Hereto annexed and marked as {{ point.exhibit.label }} is a copy of the {{ point.exhibit.description | replace('Copy of the ', '') | replace('Copy of ', '') | replace('copy of ', '') }} addressed by the Respondent No.{{ filing_respondent_number }} to the Petitioner.{% endif %}
+{% for point in formatted_points %}
+{{ point.point_number }}. {{ point.text }}
 
-{% elif point.move_type == "DOCUMENT_REFERENCE" %}
-{{ point.point_number }}. {{ point.content.rstrip('.') }}.{% if point.exhibit %} Hereto annexed and marked as {{ point.exhibit.label }} is a copy of the {{ point.exhibit.description | replace('Copy of the ', '') | replace('Copy of ', '') | replace('copy of ', '') }}.{% endif %}
-
-{% elif point.move_type == "CLOSING" %}
-{{ point.point_number }}. In the premises aforesaid, I say that the {{ case_type }} deserves to be dismissed with costs.
-{% endif %}
 {% endfor %}
 
 PRAYER
