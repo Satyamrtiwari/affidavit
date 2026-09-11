@@ -10,6 +10,7 @@ Main entry point. Exposes API endpoints for:
 
 import json
 import logging
+import re
 from pathlib import Path
 from io import BytesIO
 from contextlib import asynccontextmanager
@@ -139,8 +140,23 @@ async def generate_affidavit(
 
     # ── Step 3: Generate Document ─────────────────────────────────────────
     try:
-        plain_text, docx_buffer = generate_all(entities, save_docx=True)
-        logger.info("Document generated successfully")
+        raw_stem = Path(case_info.filename).stem if case_info.filename else "affidavit"
+        clean_stem = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_stem)
+        docx_filename = f"generated_{clean_stem}.docx"
+        report_json_filename = f"evaluation_report_{clean_stem}.json"
+        report_md_filename = f"evaluation_report_{clean_stem}.md"
+
+        plain_text, docx_buffer = generate_all(
+            entities,
+            save_docx=True,
+            output_filename=docx_filename
+        )
+
+        # Also maintain default generated_affidavit.docx for backward compatibility
+        with open(OUTPUTS_DIR / "generated_affidavit.docx", "wb") as f:
+            f.write(docx_buffer.getvalue())
+
+        logger.info(f"Document generated successfully: {docx_filename}")
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -159,31 +175,36 @@ async def generate_affidavit(
 
     # ── Step 5: Save Evaluation Report ────────────────────────────────────
     try:
-        # Save as JSON
-        report_json_path = OUTPUTS_DIR / "evaluation_report.json"
-        with open(report_json_path, "w", encoding="utf-8") as f:
+        # Save custom named reports
+        with open(OUTPUTS_DIR / report_json_filename, "w", encoding="utf-8") as f:
             f.write(evaluation.model_dump_json(indent=2))
-
-        # Save as Markdown
-        report_md_path = OUTPUTS_DIR / "evaluation_report.md"
-        with open(report_md_path, "w", encoding="utf-8") as f:
+        with open(OUTPUTS_DIR / report_md_filename, "w", encoding="utf-8") as f:
             f.write(evaluation.to_markdown())
 
-        logger.info(f"Saved evaluation reports to {OUTPUTS_DIR}")
+        # Also maintain default evaluation_report files
+        with open(OUTPUTS_DIR / "evaluation_report.json", "w", encoding="utf-8") as f:
+            f.write(evaluation.model_dump_json(indent=2))
+        with open(OUTPUTS_DIR / "evaluation_report.md", "w", encoding="utf-8") as f:
+            f.write(evaluation.to_markdown())
+
+        logger.info(f"Saved evaluation reports: {report_json_filename}, {report_md_filename}")
     except Exception as e:
         logger.warning(f"Failed to save evaluation reports: {e}")
 
     # ── Return Response ───────────────────────────────────────────────────
     return {
         "success": True,
+        "filename": docx_filename,
         "entities": entities.model_dump(),
         "generated_text": plain_text,
         "evaluation": evaluation.model_dump(),
         "evaluation_markdown": evaluation.to_markdown(),
         "files": {
-            "affidavit": "generated_affidavit.docx",
-            "report_json": "evaluation_report.json",
-            "report_md": "evaluation_report.md",
+            "affidavit": docx_filename,
+            "report_json": report_json_filename,
+            "report_md": report_md_filename,
+            "download_affidavit_url": f"/api/download/affidavit?filename={docx_filename}",
+            "download_report_url": f"/api/download/report?filename={report_json_filename}",
         },
     }
 
@@ -219,9 +240,13 @@ async def extract_entities_endpoint(
 # ─── Download Generated DOCX ─────────────────────────────────────────────────
 
 @app.get("/api/download/affidavit")
-async def download_affidavit():
-    """Download the most recently generated affidavit .docx file."""
-    docx_path = OUTPUTS_DIR / "generated_affidavit.docx"
+async def download_affidavit(filename: str = None):
+    """Download the generated affidavit .docx file."""
+    target_filename = Path(filename).name if filename else "generated_affidavit.docx"
+    docx_path = OUTPUTS_DIR / target_filename
+
+    if not docx_path.exists():
+        docx_path = OUTPUTS_DIR / "generated_affidavit.docx"
 
     if not docx_path.exists():
         raise HTTPException(
@@ -233,7 +258,10 @@ async def download_affidavit():
         open(docx_path, "rb"),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={
-            "Content-Disposition": "attachment; filename=generated_affidavit.docx"
+            "Content-Disposition": f"attachment; filename={target_filename}",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
         },
     )
 
@@ -241,16 +269,20 @@ async def download_affidavit():
 # ─── Download Evaluation Report ───────────────────────────────────────────────
 
 @app.get("/api/download/report")
-async def download_report(format: str = "json"):
+async def download_report(format: str = "json", filename: str = None):
     """Download the evaluation report in JSON or Markdown format."""
-    if format == "md":
-        report_path = OUTPUTS_DIR / "evaluation_report.md"
+    if filename:
+        target_filename = Path(filename).name
+        report_path = OUTPUTS_DIR / target_filename
+        media_type = "text/markdown" if target_filename.endswith(".md") else "application/json"
+    elif format == "md":
+        target_filename = "evaluation_report.md"
+        report_path = OUTPUTS_DIR / target_filename
         media_type = "text/markdown"
-        filename = "evaluation_report.md"
     else:
-        report_path = OUTPUTS_DIR / "evaluation_report.json"
+        target_filename = "evaluation_report.json"
+        report_path = OUTPUTS_DIR / target_filename
         media_type = "application/json"
-        filename = "evaluation_report.json"
 
     if not report_path.exists():
         raise HTTPException(
@@ -261,7 +293,12 @@ async def download_report(format: str = "json"):
     return StreamingResponse(
         open(report_path, "rb"),
         media_type=media_type,
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={
+            "Content-Disposition": f"attachment; filename={target_filename}",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        },
     )
 
 

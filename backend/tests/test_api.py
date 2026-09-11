@@ -42,7 +42,7 @@ def test_generate_endpoint_with_sample_pdf(client):
     assert "entities" in data
     assert "evaluation" in data
     assert data["evaluation"]["overall_score"] >= 80.0
-    assert data["files"]["affidavit"] == "generated_affidavit.docx"
+    assert "generated_03_Case_Information.docx" in data["files"]["affidavit"]
 
 
 def test_download_endpoints(client):

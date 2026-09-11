@@ -383,20 +383,25 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
     return buffer
 
 
-def generate_all(entities: CaseEntities, save_docx: bool = True) -> tuple[str, BytesIO]:
+def generate_all(
+    entities: CaseEntities,
+    save_docx: bool = True,
+    output_filename: str = "generated_affidavit.docx"
+) -> tuple[str, BytesIO]:
     """
     Generate both plain text and .docx versions.
 
     Args:
         entities: Validated CaseEntities
         save_docx: Whether to save the .docx to the outputs directory
+        output_filename: Filename for the generated .docx file
 
     Returns:
         Tuple of (plain_text, docx_buffer)
     """
     plain_text = generate_text(entities)
 
-    output_path = OUTPUTS_DIR / "generated_affidavit.docx" if save_docx else None
+    output_path = OUTPUTS_DIR / output_filename if save_docx else None
     docx_buffer = generate_docx(entities, output_path=output_path)
 
     return plain_text, docx_buffer
