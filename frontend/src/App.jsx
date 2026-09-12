@@ -1259,9 +1259,9 @@ export default function App() {
                       </div>
 
                       <div className="entity-info-card">
-                        <div className="entity-label">Petitioners</div>
+                        <div className="entity-label">{resultData.entities.petitioner_label || 'Petitioner'}</div>
                         <div className="entity-value">
-                          {resultData.entities.petitioners?.map((p) => p.name).join(', ') || 'N/A'}
+                          {resultData.entities.petitioner?.name || (Array.isArray(resultData.entities.petitioners) ? resultData.entities.petitioners.map((p) => p.name).join(', ') : 'N/A')}
                         </div>
                       </div>
 
