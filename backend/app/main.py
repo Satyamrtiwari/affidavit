@@ -96,11 +96,13 @@ app.add_middleware(
 )
 
 
-# ─── Health Check ─────────────────────────────────────────────────────────────
+# ─── Health Check & Keep-Alive (GET + HEAD for UptimeRobot / Render) ──────────
 
-@app.get("/api/health")
+@app.api_route("/api/health", methods=["GET", "HEAD"])
+@app.api_route("/health", methods=["GET", "HEAD"])
+@app.api_route("/", methods=["GET", "HEAD"])
 async def health_check():
-    """Health check endpoint."""
+    """Health check endpoint supporting both GET and HEAD requests for UptimeRobot and Render."""
     try:
         validate_config()
         return {"status": "healthy", "message": "All systems operational"}
