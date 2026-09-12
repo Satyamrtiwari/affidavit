@@ -23,11 +23,14 @@ from app.models.entities import (
 def sample_entities() -> CaseEntities:
     """Fixture returning a standard CaseEntities model for testing."""
     return CaseEntities(
+        court_name="HIGH COURT OF JUDICATURE AT BOMBAY",
         forum_city="BOMBAY",
         jurisdiction_type="ORDINARY ORIGINAL CIVIL JURISDICTION",
         case_type="WRIT PETITION",
         case_number="1847",
         year="2026",
+        petitioner_label="Petitioner",
+        respondent_label="Respondent",
         petitioner=PartyInfo(name="Sunrise Housing Private Limited"),
         respondents=[
             RespondentInfo(name="State of Maharashtra", respondent_number=1, is_organisation=True),

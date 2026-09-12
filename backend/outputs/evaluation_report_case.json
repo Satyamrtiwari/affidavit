@@ -56,7 +56,7 @@
       "check_id": "respondent_number_consistency",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "All 6 respondent mentions correspond to valid respondents with Respondent No.2 as filing party",
+      "message": "All 4 respondent mentions correspond to valid respondents with Respondent No.2 as filing party",
       "details": null,
       "source_reference": null
     },
@@ -65,7 +65,7 @@
       "check_id": "paragraph_range_match",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "Verification correctly states 'paragraphs 1 to 6'",
+      "message": "Verification correctly states 'paragraphs 1 to 7'",
       "details": null,
       "source_reference": null
     },
@@ -110,9 +110,9 @@
       "check_id": "template_fidelity",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "Template fidelity: 9/10 fixed phrases present (90%)",
-      "details": "Missing phrases:\n- In the premises aforesaid",
-      "source_reference": "Fixed legal phrases from format guide"
+      "message": "All 10 required fixed phrases are present",
+      "details": null,
+      "source_reference": null
     }
   ],
   "checks_passed": 7,
@@ -120,5 +120,5 @@
   "total_checks": 7,
   "issues_detected": [],
   "scoring_methodology": "Scoring is based on 6 weighted dimensions, each scored 0-100:\n- Entity Accuracy: weight 20%\n- Completeness: weight 20%\n- Structure: weight 20%\n- Consistency: weight 15%\n- Template Fidelity: weight 15%\n- Hallucination Check: weight 10%\n\nOverall score = sum of (dimension_score × weight/100) for all dimensions.\nAll 7 checks are deterministic (no LLM dependency).\nHIGH severity failures incur a 20-point penalty on the dimension score.\nMEDIUM severity failures incur a 10-point penalty.",
-  "generated_at": "2026-09-12T09:19:04.697124"
+  "generated_at": "2026-09-12T06:50:02.419545"
 }

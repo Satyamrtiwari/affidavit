@@ -30,25 +30,32 @@ You MUST output a valid JSON object matching the exact schema below. Do NOT incl
 
 CRITICAL RULES:
 1. If the respondent is an organisation/company/authority (not a person), set "is_organisation" to true for that respondent.
-2. If the deponent is filing on behalf of an organisation (not themselves), set "is_organisation_representative" to true and include their designation and organisation name.
+2. If the deponent is filing on behalf of an organisation (not themselves), set "is_organisation_representative" to true and include their designation and organisation name. If the deponent IS the respondent (individual person), set "is_organisation_representative" to false and set designation to null.
 3. Reply points must be classified into these move types:
-   - IDENTITY_AND_PERUSAL: First paragraph — who the deponent is, that they've read the petition
+   - IDENTITY_AND_PERUSAL: First paragraph — who the deponent is, that they've read the petition/plaint
    - BLANKET_DENIAL: General denial of all allegations
-   - PRELIMINARY_POSITION: Petition is misconceived, action was lawful
+   - PRELIMINARY_POSITION: Petition/Suit is misconceived, action was lawful
    - SUBSTANTIVE_ANSWER: Answering specific allegations
    - DOCUMENT_REFERENCE: Referencing/relying on specific documents/exhibits
-   - CLOSING: Final paragraph — petition deserves dismissal
+   - CLOSING: Final paragraph — petition/suit deserves dismissal
 4. Extract the verification verb exactly as stated (usually "solemnly affirm").
 5. Dates should be in "DD Month YYYY" format (e.g., "5 September 2026").
-6. Forum city should be extracted from the court name (e.g., "BOMBAY" from "HIGH COURT OF JUDICATURE AT BOMBAY").
+6. court_name: Extract the FULL court name as it appears (e.g., "HIGH COURT OF JUDICATURE AT BOMBAY", "HIGH COURT OF DELHI", "DISTRICT COURT, NORTH DELHI"). Do NOT include "IN THE".
+7. forum_city: Extract the city name from the court name (e.g., "BOMBAY", "DELHI").
+8. petitioner_label: Extract the party role label — "Petitioner" for Writ Petition, "Plaintiff" for Civil Suit, "Appellant" for Appeal, "Complainant" for Complaint. Look for how the document refers to the moving party.
+9. respondent_label: Extract the opposing role label — "Respondent" for Writ Petition, "Defendant" for Civil Suit, etc.
+10. If designation is "Not Applicable" or "N/A", set it to null and set is_organisation_representative to false.
 
 JSON SCHEMA:
 {
+  "court_name": "string — full court name, e.g. 'HIGH COURT OF JUDICATURE AT BOMBAY'",
   "forum_city": "string — city name in CAPS, e.g. BOMBAY",
   "jurisdiction_type": "string — e.g. ORDINARY ORIGINAL CIVIL",
-  "case_type": "string — e.g. WRIT PETITION",
+  "case_type": "string — e.g. WRIT PETITION or COMMERCIAL SUIT or CIVIL SUIT",
   "case_number": "string — e.g. 1847",
   "year": "string — e.g. 2026",
+  "petitioner_label": "string — 'Petitioner' or 'Plaintiff' or 'Appellant' or 'Complainant'",
+  "respondent_label": "string — 'Respondent' or 'Defendant' or 'Opposite Party'",
   "petitioner": {
     "name": "string",
     "description": "string or null",
@@ -69,7 +76,7 @@ JSON SCHEMA:
   "deponent": {
     "name": "string",
     "is_organisation_representative": "boolean",
-    "designation": "string or null",
+    "designation": "string or null — set to null if 'Not Applicable' or 'N/A'",
     "organisation": "string or null",
     "age": "string or null",
     "address": "string",
@@ -88,7 +95,7 @@ JSON SCHEMA:
       } or null
     }
   ],
-  "prayer_points": ["string — each prayer point"],
+  "prayer_points": ["string — each prayer point from the case info"],
   "attestation_place": "string",
   "attestation_date": "string — DD Month YYYY format",
   "advocate_firm": "string or null",
@@ -196,6 +203,9 @@ def extract_entities(case_text: str, reference_text: Optional[str] = None) -> Ca
         # Parse JSON from response
         data = _parse_llm_json(response_text)
 
+        # Normalize raw data for robustness
+        data = _normalize_extracted_data(data)
+
         # Validate through Pydantic model
         entities = CaseEntities.model_validate(data)
 
@@ -213,6 +223,32 @@ def extract_entities(case_text: str, reference_text: Optional[str] = None) -> Ca
         raise ValueError(f"Failed to extract entities: {e}")
 
 
+def _normalize_extracted_data(data: dict) -> dict:
+    """
+    Sanitize and normalize raw JSON extracted from LLM before Pydantic validation.
+    Guarantees robustness for arbitrary case PDFs.
+    """
+    if not isinstance(data, dict):
+        return data
+
+    deponent = data.get("deponent")
+    if isinstance(deponent, dict):
+        # Normalize verification_verb to allowed literals
+        v = str(deponent.get("verification_verb") or "").lower()
+        if "swear" in v:
+            deponent["verification_verb"] = "swear and affirm"
+        else:
+            deponent["verification_verb"] = "solemnly affirm"
+
+        # Clean designation if LLM puts "Not Applicable" / "N/A"
+        desig = str(deponent.get("designation") or "").strip()
+        if any(term in desig.lower() for term in ["not applicable", "n/a", "none"]):
+            deponent["designation"] = None
+            deponent["is_organisation_representative"] = False
+
+    return data
+
+
 def extract_entities_from_dict(data: dict) -> CaseEntities:
     """
     Create CaseEntities from a pre-existing dictionary.
@@ -224,4 +260,6 @@ def extract_entities_from_dict(data: dict) -> CaseEntities:
     Returns:
         CaseEntities: Validated structured entities
     """
+    data = _normalize_extracted_data(data)
     return CaseEntities.model_validate(data)
+

@@ -170,7 +170,7 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
 
     # ─── Part 1: Forum Heading ────────────────────────────────────────────
     add_centered_bold_caps(
-        f"IN THE HIGH COURT OF JUDICATURE AT {entities.forum_city}",
+        f"IN THE {entities.court_name}",
         space_before=12
     )
 
@@ -197,7 +197,7 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
         pet_text = pet_text.rstrip('.') + "."
 
     add_normal_text(pet_text, alignment=WD_ALIGN_PARAGRAPH.LEFT)
-    add_right_aligned("...Petitioner")
+    add_right_aligned(f"...{entities.petitioner_label}")
 
     # VERSUS
     add_centered_bold_caps("VERSUS", space_before=6, space_after=6)
@@ -215,11 +215,11 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
         resp_text = resp_text.rstrip('.') + "."
 
         add_normal_text(resp_text, alignment=WD_ALIGN_PARAGRAPH.LEFT)
-        add_right_aligned(f"...Respondent No.{resp.respondent_number}")
+        add_right_aligned(f"...{entities.respondent_label} No.{resp.respondent_number}")
 
     # ─── Part 5: Affidavit Title ──────────────────────────────────────────
     add_centered_bold_caps(
-        f"AFFIDAVIT IN REPLY ON BEHALF OF RESPONDENT NO. {entities.filing_respondent_number}",
+        f"AFFIDAVIT IN REPLY ON BEHALF OF {entities.respondent_label.upper()} NO. {entities.filing_respondent_number}",
         space_before=12,
         space_after=12
     )
@@ -229,7 +229,7 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
     if dep.is_organisation_representative:
         deponent_text = (
             f"I, {dep.name}, having office at {dep.clean_address}, "
-            f"the {dep.designation} of the Respondent No.{entities.filing_respondent_number} "
+            f"the {dep.designation} of the {entities.respondent_label} No.{entities.filing_respondent_number} "
             f"above named, do hereby {dep.verification_verb} and state as under:"
         )
     else:
@@ -241,7 +241,7 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
         parts_text = ", ".join(parts)
         deponent_text = (
             f"{parts_text}, residing at {dep.clean_address}, "
-            f"the Respondent No.{entities.filing_respondent_number} above named, "
+            f"the {entities.respondent_label} No.{entities.filing_respondent_number} above named, "
             f"do hereby {dep.verification_verb} and state as under:"
         )
 
@@ -319,7 +319,7 @@ def generate_docx(entities: CaseEntities, output_path: Path = None) -> BytesIO:
         firm_run.font.size = Pt(12)
 
         add_normal_text(
-            f"Advocates for the Respondent No.{entities.filing_respondent_number}.",
+            f"Advocates for the {entities.respondent_label} No.{entities.filing_respondent_number}.",
             alignment=WD_ALIGN_PARAGRAPH.LEFT
         )
 

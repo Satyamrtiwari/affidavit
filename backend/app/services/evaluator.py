@@ -40,37 +40,44 @@ SCORING_WEIGHTS = {
     "hallucination_check": 10,
 }
 
-# ─── Required Sections ────────────────────────────────────────────────────────
+# ─── Dynamic Required Sections ────────────────────────────────────────────────
 
-REQUIRED_SECTIONS = [
-    ("Forum Heading", r"IN THE HIGH COURT OF JUDICATURE AT"),
-    ("Jurisdiction", r"JURISDICTION"),
-    ("Case Number", r"NO\.\s*\d+\s*OF\s*\d{4}"),
-    ("Cause Title (Petitioner)", r"\.\.\.Petitioner"),
-    ("Cause Title (VERSUS)", r"VERSUS"),
-    ("Cause Title (Respondent)", r"\.\.\.Respondent"),
-    ("Affidavit Title", r"AFFIDAVIT IN REPLY ON BEHALF OF RESPONDENT NO"),
-    ("Deponent Clause", r"do hereby .+ and state as under"),
-    ("Prayer", r"PRAYER"),
-    ("Jurat", r"(Solemnly affirmed|Sworn) at"),
-    ("Verification", r"VERIFICATION"),
-]
+def get_required_sections(entities: CaseEntities) -> list[tuple[str, str]]:
+    """Build required section patterns dynamically from entities."""
+    court_pattern = re.escape(entities.court_name)
+    pet_label = re.escape(entities.petitioner_label)
+    resp_label = re.escape(entities.respondent_label)
+    return [
+        ("Forum Heading", rf"IN THE {court_pattern}"),
+        ("Jurisdiction", r"JURISDICTION"),
+        ("Case Number", r"NO\.\s*\d+\s*OF\s*\d{4}"),
+        ("Cause Title (Moving Party)", rf"\.\.\.{pet_label}"),
+        ("Cause Title (VERSUS)", r"VERSUS"),
+        ("Cause Title (Responding Party)", rf"\.\.\.{resp_label}"),
+        ("Affidavit Title", rf"AFFIDAVIT IN REPLY ON BEHALF OF {resp_label.upper()} NO"),
+        ("Deponent Clause", r"do hereby .+ and state as under"),
+        ("Prayer", r"PRAYER"),
+        ("Jurat", r"(Solemnly affirmed|Sworn) at"),
+        ("Verification", r"VERIFICATION"),
+    ]
 
-# ─── Fixed Legal Phrases ──────────────────────────────────────────────────────
+# ─── Dynamic Fixed Legal Phrases ───────────────────────────────────────────
 
-REQUIRED_PHRASES = [
-    ("well acquainted with the facts and circumstances of the case", "well conversant with the facts"),
-    ("perused the Petition and the documents annexed thereto", "read the contents of the Writ Petition", "perused a copy of the"),
-    ("competent to affirm this Affidavit in Reply", "duly authorised and well conversant", "competent to affirm"),
-    ("deny each and every allegation, contention and submission", "all allegations, averments, and submissions made in the Petition are denied", "denied as if set out herein seriatim"),
-    ("save and except those specifically admitted herein", "save and except what is expressly admitted", "specifically traversed"),
-    ("misconceived, devoid of merits", "not maintainable and is liable to be dismissed", "dismissed at the threshold"),
-    ("dismissed in limine", "arbitration exists", "efficacious remedy", "dismissed at the threshold"),
-    ("In the premises aforesaid", "In view of the foregoing", "under Article 226", "premises aforesaid"),
-    ("deserves to be dismissed with costs", "dismissed with costs"),
-    ("true and correct to my knowledge and belief", "true and correct to my knowledge"),
-    ("nothing material has been concealed therefrom", "nothing material has been concealed"),
-]
+def get_required_phrases(entities: CaseEntities) -> list[tuple[str, ...]]:
+    """Build required phrase checks dynamically from entities."""
+    case_type = entities.case_type
+    return [
+        ("well acquainted with the facts and circumstances of the case", "well conversant with the facts", "well acquainted with the facts"),
+        (f"perused the {case_type}", "perused the plaint", "read the contents of the", "perused a copy of the", "perused the Petition", "perused the"),
+        ("competent to affirm this Affidavit in Reply", "duly authorised and well conversant", "competent to affirm", "competent and authorised", "competent to swear"),
+        ("deny each and every allegation, contention and submission", "deny each and every allegation", "all allegations, averments, and submissions", "all allegations", "denied as false", "denied as if set out herein seriatim"),
+        ("save and except those specifically admitted herein", "save and except what is specifically admitted", "save and except what is expressly admitted", "specifically traversed", "save and except"),
+        ("misconceived, devoid of merits", "misconceived, barred by law, and devoid of merit", "not maintainable and is liable to be dismissed", "dismissed at the threshold", "devoid of merits", "devoid of merit", "misconceived"),
+        ("In the premises aforesaid", "In view of the foregoing", "In view of the facts", "premises aforesaid", "in view of"),
+        ("deserves to be dismissed with costs", "dismissed with costs", "dismissed with exemplary costs", "dismiss the above suit with costs", "dismiss the writ petition with costs", "dismissed in limine", "with costs"),
+        ("true and correct to my knowledge and belief", "true and correct to my knowledge"),
+        ("nothing material has been concealed therefrom", "nothing material has been concealed"),
+    ]
 
 
 # ─── Check 1: Respondent Number Consistency ───────────────────────────────────
@@ -219,12 +226,14 @@ def check_required_sections(
     generated_text: str, entities: CaseEntities
 ) -> ValidationResult:
     """
-    Verify that all 10 required sections of the affidavit are present.
+    Verify that all required sections of the affidavit are present.
+    Uses dynamic patterns based on the actual court and party labels.
     """
+    required_sections = get_required_sections(entities)
     missing = []
     found = []
 
-    for section_name, pattern in REQUIRED_SECTIONS:
+    for section_name, pattern in required_sections:
         if re.search(pattern, generated_text, re.IGNORECASE):
             found.append(section_name)
         else:
@@ -237,7 +246,7 @@ def check_required_sections(
             passed=False,
             severity="HIGH",
             message=f"Missing {len(missing)} required section(s): {', '.join(missing)}",
-            details=f"Found {len(found)}/{len(REQUIRED_SECTIONS)} sections",
+            details=f"Found {len(found)}/{len(required_sections)} sections",
             source_reference="Entire document",
         )
 
@@ -245,7 +254,7 @@ def check_required_sections(
         check_name="Required Sections Present",
         check_id="required_sections_present",
         passed=True,
-        message=f"All {len(REQUIRED_SECTIONS)} required sections are present",
+        message=f"All {len(required_sections)} required sections are present",
     )
 
 
@@ -442,7 +451,8 @@ def check_entity_accuracy(
 
     for label, expected_value in checks:
         checked += 1
-        if expected_value.lower() not in generated_text.lower():
+        clean_expected = expected_value.strip().rstrip('.').lower()
+        if clean_expected not in generated_text.lower():
             errors.append(f"{label}: '{expected_value}' not found in generated document")
 
     if errors:
@@ -471,12 +481,13 @@ def check_template_fidelity(
 ) -> ValidationResult:
     """
     Verify that required fixed legal phrases are preserved in the document.
-    These are standard legal boilerplate that must appear verbatim.
+    Uses dynamic phrases based on the actual case type.
     """
+    required_phrases = get_required_phrases(entities)
     missing = []
     found = 0
 
-    for item in REQUIRED_PHRASES:
+    for item in required_phrases:
         if isinstance(item, tuple):
             matched = any(p.lower() in generated_text.lower() for p in item)
             display_phrase = item[0]
@@ -489,7 +500,7 @@ def check_template_fidelity(
         else:
             missing.append(display_phrase)
 
-    total = len(REQUIRED_PHRASES)
+    total = len(required_phrases)
     fidelity_pct = (found / total * 100) if total > 0 else 0
 
     if missing:

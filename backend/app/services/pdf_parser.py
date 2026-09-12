@@ -104,20 +104,12 @@ def clean_text(raw_text: str) -> str:
         "VERIFICA TION": "VERIFICATION",
         "AFFIDA VIT": "AFFIDAVIT",
         "REPL Y": "REPLY",
-        "BOMBA Y": "BOMBAY",
         "ORDINAR Y": "ORDINARY",
         "PRA YER": "PRAYER",
         "COUR T": "COURT",
         "INFORMA TION": "INFORMATION",
         "EXHIBIT -": "EXHIBIT-",
-        "Secretary ,": "Secretary,",
-        "Authority ,": "Authority,",
-        "Petitioner .": "Petitioner.",
-        "authority .": "authority.",
-        "order ,": "order,",
-        "Reply .": "Reply.",
         "Addr ess": "Address",
-        "MEHT A": "MEHTA",
     }
     for broken, fixed in common_fixes.items():
         text = text.replace(broken, fixed)

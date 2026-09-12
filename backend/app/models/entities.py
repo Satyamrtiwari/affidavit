@@ -9,7 +9,7 @@ Flow: PDF text → LLM extraction → CaseEntities (this file) → Jinja2 templa
 """
 
 from typing import Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PartyInfo(BaseModel):
@@ -107,6 +107,24 @@ class DeponentInfo(BaseModel):
         description="The verb used in the oath — must match the jurat"
     )
 
+    @field_validator("verification_verb", mode="before")
+    @classmethod
+    def normalize_verification_verb(cls, v):
+        if not v or not isinstance(v, str):
+            return "solemnly affirm"
+        if "swear" in v.lower():
+            return "swear and affirm"
+        return "solemnly affirm"
+
+    @field_validator("designation", mode="before")
+    @classmethod
+    def normalize_designation(cls, v):
+        if not v or not isinstance(v, str):
+            return None
+        if any(term in v.lower() for term in ["not applicable", "n/a", "none"]):
+            return None
+        return v.strip()
+
     @property
     def clean_address(self) -> str:
         return self.address.strip().rstrip('.')
@@ -147,6 +165,34 @@ class ReplyPoint(BaseModel):
         description="Exhibit reference if this paragraph refers to a document"
     )
 
+    @field_validator("move_type", mode="before")
+    @classmethod
+    def normalize_move_type(cls, v):
+        if not v or not isinstance(v, str):
+            return "SUBSTANTIVE_ANSWER"
+        normalized = v.strip().upper().replace(" ", "_")
+        allowed = {
+            "IDENTITY_AND_PERUSAL",
+            "BLANKET_DENIAL",
+            "PRELIMINARY_POSITION",
+            "SUBSTANTIVE_ANSWER",
+            "DOCUMENT_REFERENCE",
+            "CLOSING"
+        }
+        if normalized in allowed:
+            return normalized
+        if "IDENTITY" in normalized or "PERUSAL" in normalized:
+            return "IDENTITY_AND_PERUSAL"
+        if "DENIAL" in normalized:
+            return "BLANKET_DENIAL"
+        if "PRELIMINARY" in normalized:
+            return "PRELIMINARY_POSITION"
+        if "DOCUMENT" in normalized or "EXHIBIT" in normalized:
+            return "DOCUMENT_REFERENCE"
+        if "CLOSING" in normalized or "DISMISS" in normalized:
+            return "CLOSING"
+        return "SUBSTANTIVE_ANSWER"
+
     @property
     def clean_content(self) -> str:
         """
@@ -170,11 +216,13 @@ class ReplyPoint(BaseModel):
         Format the reply point cleanly:
         - If the content is already drafted as a complete first-person legal paragraph, preserve it faithfully.
         - Avoid unnecessary rule-based overwriting of case-specific facts.
-        - If the content is a raw summary/stub, expand it into standard Bombay High Court phrasing.
+        - If the content is a raw summary/stub, expand it using dynamic case_type.
         - Ensure proper exhibit annexure without duplicate mentions.
         """
         import re
         content = self.content.strip().rstrip('.')
+        case_type = entities.case_type
+        resp_label = entities.respondent_label
 
         # Check if content already contains an exhibit marking
         has_exhibit_mention = bool(re.search(
@@ -189,24 +237,24 @@ class ReplyPoint(BaseModel):
                 text = content
             else:
                 if entities.deponent.is_organisation_representative:
-                    text = f"I say that I am the {entities.deponent.designation} of the Respondent No.{entities.filing_respondent_number} in the above {entities.case_type} and am well acquainted with the facts and circumstances of the case. I have perused the Petition and the documents annexed thereto and am competent to affirm this Affidavit in Reply."
+                    text = f"I say that I am the {entities.deponent.designation} of the {resp_label} No.{entities.filing_respondent_number} in the above {case_type} and am well acquainted with the facts and circumstances of the case. I have perused the {case_type} and the documents annexed thereto and am competent to affirm this Affidavit in Reply."
                 else:
-                    text = f"I say that I am the Respondent No.{entities.filing_respondent_number} in the above {entities.case_type} and am well acquainted with the facts and circumstances of the case. I have perused the Petition and the documents annexed thereto and am competent to affirm this Affidavit in Reply."
+                    text = f"I say that I am the {resp_label} No.{entities.filing_respondent_number} in the above {case_type} and am well acquainted with the facts and circumstances of the case. I have perused the {case_type} and the documents annexed thereto and am competent to affirm this Affidavit in Reply."
 
         elif self.move_type == "BLANKET_DENIAL":
             if "save and except" in content.lower() and ("traversed" in content.lower() or "dismissed" in content.lower() or "specifically admitted" in content.lower()):
                 text = content
             else:
-                text = f"At the outset, I deny each and every allegation, contention and submission made in the {entities.case_type}, save and except those specifically admitted herein. I say that the Petition is misconceived, devoid of merits and is liable to be dismissed in limine."
+                text = f"At the outset, I deny each and every allegation, contention and submission made in the {case_type}, save and except those specifically admitted herein. I say that the {case_type} is misconceived, devoid of merits and is liable to be dismissed."
 
         elif self.move_type == "CLOSING":
             if "dismissed" in content.lower() and ("article 226" in content.lower() or "in view of" in content.lower() or "premises" in content.lower()):
                 text = content
             else:
-                text = f"In the premises aforesaid, I say that the {entities.case_type} deserves to be dismissed with costs."
+                text = f"In the premises aforesaid, I say that the {case_type} deserves to be dismissed with costs."
 
         elif self.move_type == "DOCUMENT_REFERENCE":
-            if not re.match(r'^(I\s+say\s+that|I\s+crave\s+leave|Respondent\s+No)', content, re.IGNORECASE):
+            if not re.match(r'^(I\s+say\s+that|I\s+crave\s+leave|That\s+|' + re.escape(resp_label) + r'\s+No)', content, re.IGNORECASE):
                 c_text = content
                 if c_text.startswith("The "):
                     c_text = "the " + c_text[4:]
@@ -216,7 +264,7 @@ class ReplyPoint(BaseModel):
 
         else:
             # Substantive Answer or Preliminary Position
-            if re.match(r'^(I\s+say\s+that|I\s+deny|I\s+submit|With\s+reference\s+to)', content, re.IGNORECASE):
+            if re.match(r'^(I\s+say\s+that|I\s+deny|I\s+submit|With\s+reference\s+to|That\s+|At\s+the\s+outset)', content, re.IGNORECASE):
                 text = content
             else:
                 c_text = content
@@ -249,6 +297,10 @@ class CaseEntities(BaseModel):
     """
 
     # ─── Court & Case Details ─────────────────────────────────────────────
+    court_name: str = Field(
+        ...,
+        description="Full court name as it appears, e.g. 'HIGH COURT OF JUDICATURE AT BOMBAY' or 'HIGH COURT OF DELHI'"
+    )
     forum_city: str = Field(
         ...,
         description="City where the court sits, e.g. 'BOMBAY'"
@@ -268,6 +320,16 @@ class CaseEntities(BaseModel):
     year: str = Field(
         ...,
         description="Year of the case, e.g. '2026'"
+    )
+
+    # ─── Dynamic Party Labels ────────────────────────────────────────────
+    petitioner_label: str = Field(
+        default="Petitioner",
+        description="Role label: 'Petitioner', 'Plaintiff', 'Appellant', 'Complainant'"
+    )
+    respondent_label: str = Field(
+        default="Respondent",
+        description="Role label: 'Respondent', 'Defendant', 'Opposite Party'"
     )
 
     # ─── Parties ──────────────────────────────────────────────────────────
@@ -293,12 +355,8 @@ class CaseEntities(BaseModel):
         description="Ordered list of reply points to be converted into numbered paragraphs"
     )
     prayer_points: list[str] = Field(
-        default_factory=lambda: [
-            "dismiss the present Writ Petition with costs",
-            "refuse any interim or ad-interim relief sought by the Petitioner",
-            "grant such other and further reliefs as this Hon'ble Court may deem fit and proper in the facts and circumstances of the case"
-        ],
-        description="Prayer points (usually standard, but can be customised)"
+        default_factory=list,
+        description="Prayer points extracted from the case information"
     )
 
     # ─── Attestation ─────────────────────────────────────────────────────
@@ -356,11 +414,13 @@ class CaseEntities(BaseModel):
     def clean_prayer_points(self) -> list[str]:
         """
         Normalize prayer points to follow 'may be pleased to: (a) ...' syntax.
-        Strips preambles, converts third-person phrasing into direct action verbs,
-        ensures lowercase initial letters, and prevents duplicate relief clauses.
+        Uses dynamic case_type and petitioner_label instead of hardcoded values.
         """
         import re
         cleaned = []
+        case_type = self.case_type
+        pet_label = self.petitioner_label
+
         for p in self.prayer_points:
             pt = p.strip().rstrip(".;")
             # Strip preambles like "It is respectfully prayed that this Hon'ble Court may be pleased to"
@@ -371,16 +431,12 @@ class CaseEntities(BaseModel):
                 flags=re.IGNORECASE
             ).strip()
 
-            m = re.match(r"^(?:(?:the\s+)?Respondent\s+No\.?\s*\d+\s+)?prays\s+that\s+(.*)", pt, re.IGNORECASE)
+            # Handle "Respondent No.X prays that ..." preamble
+            m = re.match(r"^(?:(?:the\s+)?" + re.escape(self.respondent_label) + r"\s+No\.?\s*\d+\s+)?prays\s+that\s+(.*)", pt, re.IGNORECASE)
             if m:
                 rest = m.group(1).strip()
                 if re.search(r"be\s+dismissed", rest, re.IGNORECASE):
-                    pt = re.sub(
-                        r"(?:the\s+)?(?:Writ\s+Petition|Petition)\s+be\s+dismissed(?:\s+with\s+costs)?",
-                        "dismiss the present Writ Petition with costs",
-                        rest,
-                        flags=re.IGNORECASE
-                    )
+                    pt = f"dismiss the present {case_type} with costs"
                 else:
                     pt = rest
 
@@ -389,12 +445,15 @@ class CaseEntities(BaseModel):
                 pt = pt[0].lower() + pt[1:]
                 cleaned.append(pt)
 
-        # Append standard High Court prayers if not already present
+        # Ensure standard prayers are present (using dynamic labels)
+        has_dismiss = any("dismiss" in c.lower() for c in cleaned)
         has_interim = any("interim" in c.lower() for c in cleaned)
         has_general = any("other and further" in c.lower() or "fit and proper" in c.lower() for c in cleaned)
 
+        if not has_dismiss:
+            cleaned.insert(0, f"dismiss the present {case_type} with costs")
         if not has_interim:
-            cleaned.append("refuse any interim or ad-interim relief sought by the Petitioner")
+            cleaned.append(f"refuse any interim or ad-interim relief sought by the {pet_label}")
         if not has_general:
             cleaned.append("grant such other and further reliefs as this Hon'ble Court may deem fit and proper in the facts and circumstances of the case")
 

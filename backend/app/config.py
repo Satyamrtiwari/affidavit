@@ -33,7 +33,7 @@ APP_DEBUG: bool = os.getenv("APP_DEBUG", "true").lower() == "true"
 MAX_RETRIES: int = 2          # Self-correction loop retries
 MIN_ACCEPTABLE_SCORE: int = 85  # Minimum evaluation score to accept without retry
 LLM_TEMPERATURE: float = 0.2   # Low temperature for deterministic legal text
-LLM_MAX_TOKENS: int = 4096     # Max tokens for generation
+LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "8192"))  # Max tokens for generation (allows reasoning + large legal JSON)
 
 
 def validate_config() -> None:

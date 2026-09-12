@@ -1,12 +1,12 @@
 {# 
-  Affidavit in Reply — Jinja2 Template (Default: Bombay High Court Format)
+  Affidavit in Reply — Jinja2 Template (Dynamic: adapts to any court/case type)
   
   This template follows the 10-part skeleton defined in the format guide.
   All fixed legal phrases are preserved exactly as specified.
   
   Variables come from the CaseEntities Pydantic model.
 #}
-IN THE HIGH COURT OF JUDICATURE AT {{ forum_city }}
+IN THE {{ court_name }}
 
 {{ clean_jurisdiction }}
 
@@ -17,18 +17,18 @@ IN THE HIGH COURT OF JUDICATURE AT {{ forum_city }}
 {% if petitioner.clean_through %}
 {{ petitioner.clean_through }}.
 {% endif %}
-...Petitioner
+...{{ petitioner_label }}
 
 VERSUS
 
 {% for respondent in respondents %}
 {{ respondent.respondent_number }}. {{ respondent.name.rstrip('.') }}{% if respondent.description %}, {{ respondent.description.rstrip('.') }}{% endif %}{% if respondent.clean_through %}, {{ respondent.clean_through }}{% endif %}{% if respondent.clean_address and respondent.clean_address not in (respondent.description or '') %}, {% if respondent.is_organisation %}having office at{% else %}residing at{% endif %} {{ respondent.clean_address }}{% endif %}.
-...Respondent No.{{ respondent.respondent_number }}
+...{{ respondent_label }} No.{{ respondent.respondent_number }}
 {% endfor %}
 
-AFFIDAVIT IN REPLY ON BEHALF OF RESPONDENT NO. {{ filing_respondent_number }}
+AFFIDAVIT IN REPLY ON BEHALF OF {{ respondent_label | upper }} NO. {{ filing_respondent_number }}
 
-{% if deponent.is_organisation_representative %}I, {{ deponent.name }}, having office at {{ deponent.clean_address }}, the {{ deponent.designation }} of the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% else %}I, {{ deponent.name }}, {% if deponent.age %}Age {{ deponent.age.rstrip('.') }}, {% endif %}{% if deponent.occupation %}Occupation: {{ deponent.occupation.rstrip('.') }}, {% endif %}residing at {{ deponent.clean_address }}, the Respondent No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% endif %}
+{% if deponent.is_organisation_representative %}I, {{ deponent.name }}, having office at {{ deponent.clean_address }}, the {{ deponent.designation }} of the {{ respondent_label }} No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% else %}I, {{ deponent.name }}, {% if deponent.age %}Age {{ deponent.age.rstrip('.') }}, {% endif %}{% if deponent.occupation %}Occupation: {{ deponent.occupation.rstrip('.') }}, {% endif %}residing at {{ deponent.clean_address }}, the {{ respondent_label }} No.{{ filing_respondent_number }} above named, do hereby {{ deponent.verification_verb }} and state as under:{% endif %}
 
 {% for point in formatted_points %}
 {{ point.point_number }}. {{ point.text }}
@@ -60,5 +60,5 @@ DEPONENT
 {% if advocate_firm %}
 
 {{ advocate_firm }}
-Advocates for the Respondent No.{{ filing_respondent_number }}.
+Advocates for the {{ respondent_label }} No.{{ filing_respondent_number }}.
 {% endif %}

@@ -1,30 +1,53 @@
-# Environment
+# Environment & Secrets (NEVER COMMIT)
 .env
+.env.local
+
+# Python cache & build artifacts
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
 
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Virtual environment
+# Virtual Environments
 venv/
 .venv/
 env/
+ENV/
 
-# Generated outputs (keep in outputs/ only)
-*.docx
-!outputs/*.docx
+# IDE & Editor artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
 
 # Logs
 *.log
 
-# Node (for future React frontend)
+# Scratch scripts & temporary test artifacts
+scratch/
+test_*.txt
+*.tmp
+backend/test_pipeline.py
+
+# In outputs folder: ignore ad-hoc test runs, keep official assignment deliverables
+backend/outputs/test_*
+backend/outputs/user_*
+backend/outputs/*scenario*
+backend/outputs/*.txt
+backend/outputs/generated_*_*.docx
+backend/outputs/evaluation_report_*_*.json
+backend/outputs/evaluation_report_*_*.md
+
+# Frontend (Node / React)
 node_modules/
 dist/
 build/
+.next/

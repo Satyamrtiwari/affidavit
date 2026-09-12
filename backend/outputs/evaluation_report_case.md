@@ -40,4 +40,4 @@ All 7 checks are deterministic (no LLM dependency).
 HIGH severity failures incur a 20-point penalty on the dimension score.
 MEDIUM severity failures incur a 10-point penalty.
 
-*Report generated at: 2026-09-12T09:19:04.697124*
+*Report generated at: 2026-09-12T06:50:02.419545*
