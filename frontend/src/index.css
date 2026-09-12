@@ -1,0 +1,81 @@
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Merriweather', 'Times New Roman', Georgia, serif;
+
+  /* Color Palette - Exactly matching the reference mockups */
+  --bg-app: #f4f6fa;
+  --bg-card: #ffffff;
+  --bg-header: #1e293b;
+  --text-header: #ffffff;
+  --text-header-muted: #94a3b8;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --primary-blue: #2563eb;
+  --primary-blue-hover: #1d4ed8;
+  --primary-blue-light: #eff6ff;
+  --primary-blue-border: #bfdbfe;
+
+  --success-green: #10b981;
+  --success-green-hover: #059669;
+  --success-green-light: #ecfdf5;
+  --success-green-border: #a7f3d0;
+  --success-green-text: #047857;
+
+  --warning-amber: #f59e0b;
+  --warning-amber-light: #fffbeb;
+  --warning-amber-border: #fde68a;
+  --warning-amber-text: #b45309;
+
+  --danger-red: #ef4444;
+  --danger-red-light: #fef2f2;
+  --danger-red-border: #fecaca;
+  --danger-red-text: #b91c1c;
+
+  --border-subtle: #e2e8f0;
+  --border-dashed: #cbd5e1;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+  --shadow-paper: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
