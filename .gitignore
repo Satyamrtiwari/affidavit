@@ -1,13 +1,27 @@
 # ==============================================================================
-# Git Ignore Configuration — Affidavit AI System
+# Git Ignore Configuration — Code Only
 # ==============================================================================
 
-# --- Environment Variables & Secrets (CRITICAL: NEVER COMMIT) ---
+# --- Environment Variables & Examples ---
 .env
 .env.*
-!.env.example
+*.env
 *.local
-backend/.env
+
+# --- Generated Outputs & Deliverables ---
+outputs/
+backend/outputs/
+*.docx
+evaluation_report.md
+evaluation_report.json
+
+# --- Assignment Docs & Plaintext Reference Dumps ---
+AI_Intern_Assignment.txt
+01_Affidavit_Format.txt
+02_Affidavit_Reply_Sample.txt
+03_Case_Information.txt
+architecture_flow.png
+backend/app/reference_docs/
 
 # --- Python Cache & Build Artifacts ---
 __pycache__/
@@ -61,26 +75,14 @@ temp/
 tmp/
 *.tmp
 
-# --- Generated Document Outputs ---
-# Exclude ad-hoc generated test runs; preserve core reference assignment deliverables
-outputs/*
-!outputs/generated_affidavit.docx
-!outputs/evaluation_report.json
-!outputs/evaluation_report.md
-!outputs/.gitkeep
-backend/outputs/*
-!backend/outputs/generated_affidavit.docx
-!backend/outputs/evaluation_report.json
-!backend/outputs/evaluation_report.md
-!backend/outputs/.gitkeep
-
-# --- Node / Frontend Artifacts (for UI integration) ---
+# --- Node / Frontend Artifacts ---
 node_modules/
 .next/
 .turbo/
 .parcel-cache/
 *.tsbuildinfo
 coverage/
+frontend/dist/
 
 # --- Tooling & Agent Internal Cache ---
 .agents/
