@@ -522,6 +522,62 @@ def check_template_fidelity(
     )
 
 
+# ─── Check 8: Party Label Consistency (Generated Body Text) ──────────────────
+
+def check_party_label_consistency(
+    generated_text: str, entities: CaseEntities
+) -> ValidationResult:
+    """
+    Verify that the generated body text (between deponent clause and PRAYER)
+    consistently uses the expected party label (e.g. Defendant vs Respondent)
+    and does not leak contradictory terminology.
+    """
+    expected_label = entities.respondent_label
+    if expected_label == "Defendant":
+        wrong_label = "Respondent"
+    elif expected_label == "Respondent":
+        wrong_label = "Defendant"
+    else:
+        return ValidationResult(
+            check_name="Party Label Consistency",
+            check_id="party_label_consistency",
+            passed=True,
+            message=f"Non-standard respondent label '{expected_label}'; skipped opposition check",
+        )
+
+    # Scan body text between deponent clause ("state as under:") and "PRAYER"
+    body_match = re.search(
+        r'state as under:(.*?)PRAYER',
+        generated_text,
+        re.DOTALL | re.IGNORECASE
+    )
+    body_text = body_match.group(1) if body_match else generated_text
+
+    pattern = rf'\b{re.escape(wrong_label)}\b'
+    matches = list(re.finditer(pattern, body_text, re.IGNORECASE))
+
+    if matches:
+        return ValidationResult(
+            check_name="Party Label Consistency",
+            check_id="party_label_consistency",
+            passed=False,
+            severity="HIGH",
+            message=(
+                f"Generated body text uses '{wrong_label}' ({len(matches)} occurrence(s)) "
+                f"but respondent_label is '{expected_label}' — conflicting terminology in draft"
+            ),
+            details=f"Found '{wrong_label}' in body text between deponent clause and PRAYER when expected label is '{expected_label}'",
+            source_reference="Generated body paragraphs (deponent clause to PRAYER)",
+        )
+
+    return ValidationResult(
+        check_name="Party Label Consistency",
+        check_id="party_label_consistency",
+        passed=True,
+        message=f"Party label '{expected_label}' used consistently; no conflicting '{wrong_label}' mentions in body",
+    )
+
+
 # ─── Scoring Engine ───────────────────────────────────────────────────────────
 
 def _calculate_dimension_scores(
@@ -538,7 +594,7 @@ def _calculate_dimension_scores(
         "entity_accuracy": ["entity_accuracy"],
         "completeness": ["required_sections_present", "paragraph_range_match"],
         "structure": ["required_sections_present"],
-        "consistency": ["respondent_number_consistency", "verb_agreement"],
+        "consistency": ["respondent_number_consistency", "verb_agreement", "party_label_consistency"],
         "template_fidelity": ["template_fidelity", "deponent_type_match"],
         "hallucination_check": ["entity_accuracy"],
     }
@@ -612,7 +668,7 @@ def evaluate_document(
     """
     logger.info("Starting document evaluation...")
 
-    # Run all 7 deterministic checks
+    # Run all 8 deterministic checks
     results = [
         check_respondent_number_consistency(generated_text, entities),
         check_paragraph_range(generated_text, entities),
@@ -621,6 +677,7 @@ def evaluate_document(
         check_deponent_type_match(generated_text, entities),
         check_entity_accuracy(generated_text, entities),
         check_template_fidelity(generated_text, entities),
+        check_party_label_consistency(generated_text, entities),
     ]
 
     # Log results

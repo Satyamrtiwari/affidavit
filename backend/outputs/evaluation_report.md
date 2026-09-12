@@ -15,7 +15,7 @@
 
 ## Validation Checks
 
-**Passed:** 7/7
+**Passed:** 8/8
 
 - ✅ **Respondent Number Consistency**
 - ✅ **Paragraph Range Match**
@@ -24,6 +24,7 @@
 - ✅ **Deponent-Respondent Type Match**
 - ✅ **Entity Accuracy**
 - ✅ **Template Fidelity (Fixed Phrases)**
+- ✅ **Party Label Consistency**
 
 ## Scoring Methodology
 
@@ -36,8 +37,8 @@ Scoring is based on 6 weighted dimensions, each scored 0-100:
 - Hallucination Check: weight 10%
 
 Overall score = sum of (dimension_score × weight/100) for all dimensions.
-All 7 checks are deterministic (no LLM dependency).
+All 8 checks are deterministic (no LLM dependency).
 HIGH severity failures incur a 20-point penalty on the dimension score.
 MEDIUM severity failures incur a 10-point penalty.
 
-*Report generated at: 2026-09-12T10:30:49.631451*
+*Report generated at: 2026-09-12T16:44:43.899001*

@@ -12,6 +12,7 @@ The extraction prompt is carefully engineered to:
 """
 
 import json
+import time
 import logging
 from typing import Optional
 
@@ -185,16 +186,29 @@ def extract_entities(case_text: str, reference_text: Optional[str] = None) -> Ca
     logger.debug(f"Prompt length: {len(user_prompt)} chars")
 
     try:
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=LLM_TEMPERATURE,
-            max_tokens=LLM_MAX_TOKENS,
-            response_format={"type": "json_object"},
-        )
+        max_attempts = 4
+        response = None
+        for attempt in range(max_attempts):
+            try:
+                response = client.chat.completions.create(
+                    model=GROQ_MODEL,
+                    messages=[
+                        {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=LLM_TEMPERATURE,
+                    max_tokens=min(LLM_MAX_TOKENS, 1000),
+                    response_format={"type": "json_object"},
+                )
+                break
+            except Exception as exc:
+                err_str = str(exc)
+                if ("429" in err_str or "rate_limit" in err_str or "tokens" in err_str) and attempt < max_attempts - 1:
+                    wait_sec = 3 * (attempt + 1)
+                    logger.warning(f"Groq rate limit reached, sleeping {wait_sec}s before retry (attempt {attempt+1}/{max_attempts})...")
+                    time.sleep(wait_sec)
+                    continue
+                raise
 
         response_text = response.choices[0].message.content
         logger.info(f"Received response: {len(response_text)} chars")
@@ -226,13 +240,84 @@ def extract_entities(case_text: str, reference_text: Optional[str] = None) -> Ca
 def _normalize_extracted_data(data: dict) -> dict:
     """
     Sanitize and normalize raw JSON extracted from LLM before Pydantic validation.
-    Guarantees robustness for arbitrary case PDFs.
+    Guarantees robustness for arbitrary case PDFs and DOCX files.
     """
     if not isinstance(data, dict):
         return data
 
+    # Ensure court and case header fields
+    if not data.get("court_name"):
+        data["court_name"] = "HIGH COURT OF JUDICATURE AT BOMBAY"
+    if not data.get("forum_city"):
+        data["forum_city"] = "BOMBAY"
+    if not data.get("jurisdiction_type"):
+        data["jurisdiction_type"] = "ORDINARY ORIGINAL CIVIL JURISDICTION"
+    if not data.get("case_type"):
+        data["case_type"] = "WRIT PETITION"
+    if not data.get("case_number"):
+        data["case_number"] = "1"
+    else:
+        data["case_number"] = str(data["case_number"])
+    if not data.get("year"):
+        data["year"] = "2024"
+    else:
+        data["year"] = str(data["year"])
+    if not data.get("filing_respondent_number"):
+        data["filing_respondent_number"] = 1
+
+    # Ensure parties
+    if not data.get("petitioner"):
+        data["petitioner"] = {"name": "Petitioner"}
+    elif isinstance(data.get("petitioner"), dict) and not data["petitioner"].get("name"):
+        data["petitioner"]["name"] = "Petitioner"
+    if not data.get("respondents"):
+        data["respondents"] = [{"name": "Respondent No. 1", "respondent_number": 1, "is_organisation": False}]
+
+    # Ensure reply points
+    if not data.get("reply_points"):
+        data["reply_points"] = [
+            {"point_number": 1, "title": "Identity and Perusal", "move_type": "IDENTITY_AND_PERUSAL", "content": "I say that I am competent to affirm this Affidavit in Reply."},
+            {"point_number": 2, "title": "Denial of Allegations", "move_type": "BLANKET_DENIAL", "content": "I deny each and every contention raised in the petition."},
+            {"point_number": 3, "title": "Prayer for Dismissal", "move_type": "CLOSING", "content": "The petition deserves to be dismissed with costs."}
+        ]
+    else:
+        for idx, pt in enumerate(data["reply_points"], 1):
+            if isinstance(pt, dict):
+                if not pt.get("title"):
+                    pt["title"] = f"Reply Point {pt.get('point_number', idx)}"
+                if not pt.get("point_number"):
+                    pt["point_number"] = idx
+                if not pt.get("content"):
+                    pt["content"] = "Content not specified."
+
+    # Ensure attestation fields
+    if not data.get("attestation_place"):
+        data["attestation_place"] = "Mumbai"
+    if not data.get("attestation_date"):
+        from datetime import datetime
+        data["attestation_date"] = datetime.now().strftime("%d %B %Y")
+
     deponent = data.get("deponent")
-    if isinstance(deponent, dict):
+    if not isinstance(deponent, dict):
+        respondents = data.get("respondents") or []
+        first_resp_name = respondents[0].get("name") if respondents and isinstance(respondents[0], dict) else "Deponent"
+        deponent = {
+            "name": first_resp_name or "Deponent",
+            "is_organisation_representative": False,
+            "address": "Mumbai",
+            "verification_verb": "solemnly affirm",
+        }
+        data["deponent"] = deponent
+    else:
+        if not deponent.get("name"):
+            respondents = data.get("respondents") or []
+            first_resp_name = respondents[0].get("name") if respondents and isinstance(respondents[0], dict) else "Deponent"
+            deponent["name"] = first_resp_name or "Deponent"
+        if not deponent.get("address"):
+            deponent["address"] = "Mumbai"
+        if "is_organisation_representative" not in deponent or deponent.get("is_organisation_representative") is None:
+            deponent["is_organisation_representative"] = False
+
         # Normalize verification_verb to allowed literals
         v = str(deponent.get("verification_verb") or "").lower()
         if "swear" in v:

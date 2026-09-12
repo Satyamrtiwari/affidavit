@@ -1,5 +1,5 @@
 # ==============================================================================
-# Git Ignore Configuration
+# Git Ignore Configuration — Affidavit AI System
 # ==============================================================================
 
 # --- Environment Variables & Secrets (CRITICAL: NEVER COMMIT) ---
@@ -7,6 +7,7 @@
 .env.*
 !.env.example
 *.local
+backend/.env
 
 # --- Python Cache & Build Artifacts ---
 __pycache__/
@@ -19,6 +20,8 @@ htmlcov/
 *.egg-info/
 dist/
 build/
+.mypy_cache/
+.ruff_cache/
 
 # --- Virtual Environments ---
 venv/
@@ -47,6 +50,10 @@ ehthumbs.db
 # --- Logs & Diagnostics ---
 *.log
 logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # --- Scratch & Temporary Test Files ---
 scratch/
@@ -54,14 +61,24 @@ temp/
 tmp/
 *.tmp
 
-# --- Outputs Directory ---
-# Ignore all generated ad-hoc files; keep only the official assignment deliverables
+# --- Generated Document Outputs ---
+# Exclude ad-hoc generated test runs; preserve core reference assignment deliverables
+outputs/*
+!outputs/.gitkeep
 backend/outputs/*
 !backend/outputs/generated_affidavit.docx
 !backend/outputs/evaluation_report.json
 !backend/outputs/evaluation_report.md
 !backend/outputs/.gitkeep
 
-# --- Node / Web (if any frontend added) ---
+# --- Node / Frontend Artifacts (for UI integration) ---
 node_modules/
 .next/
+.turbo/
+.parcel-cache/
+*.tsbuildinfo
+coverage/
+
+# --- Tooling & Agent Internal Cache ---
+.agents/
+.antigravity/

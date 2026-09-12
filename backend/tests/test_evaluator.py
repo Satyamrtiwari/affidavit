@@ -22,7 +22,8 @@ def test_evaluator_all_pass(sample_entities: CaseEntities):
     report = evaluate_document(text, sample_entities)
 
     assert report.overall_score >= 85.0
-    assert report.checks_passed == 7
+    assert report.checks_passed == report.total_checks
+    assert report.total_checks == 8
     assert report.checks_failed == 0
     assert len(report.issues_detected) == 0
 

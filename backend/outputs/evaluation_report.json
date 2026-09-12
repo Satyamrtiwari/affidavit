@@ -31,7 +31,7 @@
       "max_score": 100,
       "weight": 15,
       "weighted_score": 15.0,
-      "notes": "[PASS] Respondent Number Consistency; [PASS] Verb Agreement"
+      "notes": "[PASS] Respondent Number Consistency; [PASS] Verb Agreement; [PASS] Party Label Consistency"
     },
     {
       "dimension": "Template Fidelity",
@@ -56,7 +56,7 @@
       "check_id": "respondent_number_consistency",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "All 6 respondent mentions correspond to valid respondents with Respondent No.2 as filing party",
+      "message": "All 4 respondent mentions correspond to valid respondents with Respondent No.2 as filing party",
       "details": null,
       "source_reference": null
     },
@@ -65,7 +65,7 @@
       "check_id": "paragraph_range_match",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "Verification correctly states 'paragraphs 1 to 6'",
+      "message": "Verification correctly states 'paragraphs 1 to 5'",
       "details": null,
       "source_reference": null
     },
@@ -101,7 +101,7 @@
       "check_id": "entity_accuracy",
       "passed": true,
       "severity": "MEDIUM",
-      "message": "All 9 critical entities verified present in the document",
+      "message": "All 8 critical entities verified present in the document",
       "details": null,
       "source_reference": null
     },
@@ -113,12 +113,21 @@
       "message": "Template fidelity: 9/10 fixed phrases present (90%)",
       "details": "Missing phrases:\n- In the premises aforesaid",
       "source_reference": "Fixed legal phrases from format guide"
+    },
+    {
+      "check_name": "Party Label Consistency",
+      "check_id": "party_label_consistency",
+      "passed": true,
+      "severity": "MEDIUM",
+      "message": "Party label 'Respondent' used consistently; no conflicting 'Defendant' mentions in body",
+      "details": null,
+      "source_reference": null
     }
   ],
-  "checks_passed": 7,
+  "checks_passed": 8,
   "checks_failed": 0,
-  "total_checks": 7,
+  "total_checks": 8,
   "issues_detected": [],
-  "scoring_methodology": "Scoring is based on 6 weighted dimensions, each scored 0-100:\n- Entity Accuracy: weight 20%\n- Completeness: weight 20%\n- Structure: weight 20%\n- Consistency: weight 15%\n- Template Fidelity: weight 15%\n- Hallucination Check: weight 10%\n\nOverall score = sum of (dimension_score × weight/100) for all dimensions.\nAll 7 checks are deterministic (no LLM dependency).\nHIGH severity failures incur a 20-point penalty on the dimension score.\nMEDIUM severity failures incur a 10-point penalty.",
-  "generated_at": "2026-09-12T10:30:49.631451"
+  "scoring_methodology": "Scoring is based on 6 weighted dimensions, each scored 0-100:\n- Entity Accuracy: weight 20%\n- Completeness: weight 20%\n- Structure: weight 20%\n- Consistency: weight 15%\n- Template Fidelity: weight 15%\n- Hallucination Check: weight 10%\n\nOverall score = sum of (dimension_score × weight/100) for all dimensions.\nAll 8 checks are deterministic (no LLM dependency).\nHIGH severity failures incur a 20-point penalty on the dimension score.\nMEDIUM severity failures incur a 10-point penalty.",
+  "generated_at": "2026-09-12T16:44:43.899001"
 }
