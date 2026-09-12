@@ -15,6 +15,7 @@ import {
   Plus,
   Minus,
   Maximize2,
+  Minimize2,
   Copy,
   Check,
   ShieldCheck,
@@ -55,6 +56,20 @@ export default function App() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [viewMode, setViewMode] = useState('court'); // 'court' | 'raw'
   const [sheetTheme, setSheetTheme] = useState('dark'); // 'dark' | 'light' (defaults to dark matching Image 1)
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Keyboard shortcut: Escape to exit fullscreen or dismiss modals
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isFullscreen) setIsFullscreen(false);
+        if (showReportModal) setShowReportModal(false);
+        if (showExtractedDrawer) setShowExtractedDrawer(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, showReportModal, showExtractedDrawer]);
 
   // File input refs
   const caseInputRef = useRef(null);
@@ -881,7 +896,7 @@ export default function App() {
             {screen === 'result' && resultData && (
               <div className="results-grid">
                 {/* ── Left Column: Generated Affidavit ── */}
-                <div className="panel-card">
+                <div className={`panel-card ${isFullscreen ? 'fullscreen-doc' : ''}`}>
                   <div className="panel-header">
                     <div className="panel-title-box">
                       <div className="panel-icon-box">
@@ -889,6 +904,15 @@ export default function App() {
                       </div>
                       <h2 className="panel-title">Generated Affidavit</h2>
                     </div>
+                    {isFullscreen && (
+                      <button
+                        className="toolbar-btn"
+                        title="Exit Fullscreen (Esc)"
+                        onClick={() => setIsFullscreen(false)}
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
                   </div>
 
                   {/* Toolbar */}
@@ -897,16 +921,23 @@ export default function App() {
                       <span className="page-indicator">1 / 1</span>
                       <button
                         className="toolbar-btn"
-                        title="Zoom out"
-                        onClick={() => setZoom((z) => Math.max(70, z - 10))}
+                        title="Zoom out (Min 60%)"
+                        onClick={() => setZoom((z) => Math.max(60, z - 10))}
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="zoom-indicator">{zoom}%</span>
+                      <span
+                        className="zoom-indicator"
+                        title="Click to reset zoom (100%)"
+                        onClick={() => setZoom(100)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {zoom}%
+                      </span>
                       <button
                         className="toolbar-btn"
-                        title="Zoom in"
-                        onClick={() => setZoom((z) => Math.min(140, z + 10))}
+                        title="Zoom in (Max 160%)"
+                        onClick={() => setZoom((z) => Math.min(160, z + 10))}
                       >
                         <Plus size={14} />
                       </button>
@@ -955,11 +986,11 @@ export default function App() {
                         <Download size={16} />
                       </button>
                       <button
-                        className="toolbar-btn"
-                        title="Reset Zoom"
-                        onClick={() => setZoom(100)}
+                        className={`toolbar-btn ${isFullscreen ? 'active-toolbar-btn' : ''}`}
+                        title={isFullscreen ? "Exit Fullscreen (Esc)" : "Fullscreen Document View"}
+                        onClick={() => setIsFullscreen((prev) => !prev)}
                       >
-                        <Maximize2 size={16} />
+                        {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                       </button>
                     </div>
                   </div>
@@ -968,7 +999,10 @@ export default function App() {
                   <div className={`doc-canvas-wrapper ${sheetTheme === 'dark' ? 'dark-canvas' : ''}`}>
                     <div
                       className={`legal-document-paper ${sheetTheme === 'dark' ? 'dark-sheet' : ''}`}
-                      style={{ fontSize: `${(0.96 * zoom) / 100}rem` }}
+                      style={{
+                        zoom: zoom / 100,
+                        fontSize: '0.96rem',
+                      }}
                     >
                       {viewMode === 'court' ? (
                         renderCourtDocument(resultData.generated_text)
