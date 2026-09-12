@@ -26,6 +26,8 @@ import {
   RotateCcw
 } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export default function App() {
   // Screen state: 'upload' | 'generating' | 'result'
   const [screen, setScreen] = useState('upload');
@@ -119,7 +121,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch(`${API_BASE}/api/generate`, {
         method: 'POST',
         body: formData,
       });
@@ -179,16 +181,16 @@ export default function App() {
   // Download DOCX
   const handleDownloadDocx = () => {
     if (!resultData?.files?.affidavit) {
-      window.open('/api/download/affidavit', '_blank');
+      window.open(`${API_BASE}/api/download/affidavit`, '_blank');
       return;
     }
     const filename = resultData.files.affidavit;
-    window.open(`/api/download/affidavit?filename=${encodeURIComponent(filename)}`, '_blank');
+    window.open(`${API_BASE}/api/download/affidavit?filename=${encodeURIComponent(filename)}`, '_blank');
   };
 
   // Download Report
   const handleDownloadReport = (format = 'md') => {
-    window.open(`/api/download/report?format=${format}`, '_blank');
+    window.open(`${API_BASE}/api/download/report?format=${format}`, '_blank');
   };
 
   // Cleanup timer on unmount

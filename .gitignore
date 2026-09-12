@@ -64,6 +64,9 @@ tmp/
 # --- Generated Document Outputs ---
 # Exclude ad-hoc generated test runs; preserve core reference assignment deliverables
 outputs/*
+!outputs/generated_affidavit.docx
+!outputs/evaluation_report.json
+!outputs/evaluation_report.md
 !outputs/.gitkeep
 backend/outputs/*
 !backend/outputs/generated_affidavit.docx
