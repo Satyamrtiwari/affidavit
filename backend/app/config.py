@@ -23,7 +23,7 @@ OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # ─── Groq API ────────────────────────────────────────────────────────────────
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 # ─── App Settings ─────────────────────────────────────────────────────────────
 APP_ENV: str = os.getenv("APP_ENV", "development")

@@ -197,7 +197,7 @@ def extract_entities(case_text: str, reference_text: Optional[str] = None) -> Ca
                         {"role": "user", "content": user_prompt},
                     ],
                     temperature=LLM_TEMPERATURE,
-                    max_tokens=min(LLM_MAX_TOKENS, 1000),
+                    max_tokens=LLM_MAX_TOKENS,
                     response_format={"type": "json_object"},
                 )
                 break
