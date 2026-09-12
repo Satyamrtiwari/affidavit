@@ -1,16 +1,16 @@
 # AI Affidavit Generator — Autonomous Legal Drafting & Evaluation Agent
 
-An AI-powered legal drafting system that transforms unstructured case facts into court-ready **Affidavits in Reply** and independently evaluates them for accuracy, structural integrity, and consistency. Designed for Indian civil and writ jurisdictions, the system supports dual-format ingestion (`.pdf` and `.docx`), extracts structured entities via Groq LPUs (`openai/gpt-oss-120b`) with strict schema validation, executes a **5-stage Linear Multi-Agent Workflow**, compiles pixel-perfect court documents with authentic High Court formatting, and audits the result using **13 deterministic checks** (8 post-generation + 5 pre-generation) without LLM scoring bias.
+An AI-powered legal drafting system that transforms unstructured case facts into court-ready **Affidavits in Reply** and independently evaluates them for accuracy, structural integrity, and consistency. Designed for Indian civil and writ jurisdictions, the system supports dual-format ingestion (`.pdf` and `.docx`), extracts structured entities via Groq LPUs (`qwen/qwen3.8-27b`) with strict schema validation, executes a **5-stage Linear Multi-Agent Workflow**, compiles pixel-perfect court documents with authentic High Court formatting, and audits the result using **13 deterministic checks** (8 post-generation + 5 pre-generation) without LLM scoring bias.
 
 ---
 
 ## 🔗 Links & Demos
 
-- **Live Application (Vite on Vercel)**: *[Deploying on Vercel — paste your link here]*
+- **Live Application (Vite on Vercel)**: [https://affidavit-six.vercel.app](https://affidavit-six.vercel.app)
 - **Live Backend API (FastAPI on Render)**: [https://affidavit-backend-czuu.onrender.com](https://affidavit-backend-czuu.onrender.com)
 - **Interactive Swagger API Docs**: [https://affidavit-backend-czuu.onrender.com/docs](https://affidavit-backend-czuu.onrender.com/docs)
 - **Health Check Endpoint**: [https://affidavit-backend-czuu.onrender.com/api/health](https://affidavit-backend-czuu.onrender.com/api/health)
-- **Video Walkthrough & Validation Demo**: *[Add your Loom / Google Drive link here]*
+- **Video Walkthrough & Validation Demo**: *[Coming soon / link will be added]*
   > *(Note on Render Free Tier: Free web services spin down after inactivity; the first request after idle may take 30–50 seconds to spin up.)*
 
 ---
