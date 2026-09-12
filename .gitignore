@@ -1,8 +1,14 @@
-# Environment & Secrets (NEVER COMMIT)
-.env
-.env.local
+# ==============================================================================
+# Git Ignore Configuration
+# ==============================================================================
 
-# Python cache & build artifacts
+# --- Environment Variables & Secrets (CRITICAL: NEVER COMMIT) ---
+.env
+.env.*
+!.env.example
+*.local
+
+# --- Python Cache & Build Artifacts ---
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,44 +16,52 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+*.egg-info/
+dist/
+build/
 
-# Virtual Environments
+# --- Virtual Environments ---
 venv/
 .venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
-# IDE & Editor artifacts
+# --- IDE & Editor Artifacts ---
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+.project
+.pydevproject
+.settings/
 
-# Operating System Files
+# --- Operating System Files ---
 .DS_Store
 Thumbs.db
 Desktop.ini
+ehthumbs.db
 
-# Logs
+# --- Logs & Diagnostics ---
 *.log
+logs/
 
-# Scratch scripts & temporary test artifacts
+# --- Scratch & Temporary Test Files ---
 scratch/
-test_*.txt
+temp/
+tmp/
 *.tmp
-backend/test_pipeline.py
 
-# In outputs folder: ignore ad-hoc test runs, keep official assignment deliverables
-backend/outputs/test_*
-backend/outputs/user_*
-backend/outputs/*scenario*
-backend/outputs/*.txt
-backend/outputs/generated_*_*.docx
-backend/outputs/evaluation_report_*_*.json
-backend/outputs/evaluation_report_*_*.md
+# --- Outputs Directory ---
+# Ignore all generated ad-hoc files; keep only the official assignment deliverables
+backend/outputs/*
+!backend/outputs/generated_affidavit.docx
+!backend/outputs/evaluation_report.json
+!backend/outputs/evaluation_report.md
+!backend/outputs/.gitkeep
 
-# Frontend (Node / React)
+# --- Node / Web (if any frontend added) ---
 node_modules/
-dist/
-build/
 .next/
