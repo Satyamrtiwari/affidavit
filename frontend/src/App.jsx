@@ -26,7 +26,11 @@ import {
   RotateCcw
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+// Direct backend connection: Uses local proxy in dev, direct Render backend in production (No .env needed)
+const BACKEND_URL = 'https://affidavit-backend-czuu.onrender.com';
+const API_BASE = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+  ? ''
+  : BACKEND_URL;
 
 export default function App() {
   // Screen state: 'upload' | 'generating' | 'result'
