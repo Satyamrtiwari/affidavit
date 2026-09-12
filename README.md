@@ -48,6 +48,63 @@ flowchart TD
     end
 ```
 
+### 🤖 Multi-Agent Workflow Breakdown
+
+The system processes case documents through 5 specialized agents working in a linear pipeline ([backend/app/services/agents.py](backend/app/services/agents.py)):
+
+| Agent Name | Core Role | Primary Work |
+|---|---|---|
+| **1. ExtractorAgent** | Information Extraction | Parses uploaded files and extracts structured legal entities |
+| **2. PreGenerationGuardAgent** | Pre-Drafting Guard | Validates party existence, deponent capacity, and terminology before drafting |
+| **3. DrafterAgent** | Document Compilation | Formats and compiles the complete court-ready Affidavit in Reply |
+| **4. EvaluatorAgent** | Compliance & Quality Audit | Audits the generated affidavit for structural accuracy and computes scores |
+| **5. ExporterAgent** | Deliverable Packaging | Generates final `.docx` and report files, and sets up download links |
+
+---
+
+#### 1. `ExtractorAgent` (Information Extraction)
+- **Role**: Reads the uploaded case information (PDF or Word document).
+- **Work**: 
+  - Extracts the court name, case number, year, and jurisdiction.
+  - Identifies the petitioner(s) and all respondents.
+  - Determines which respondent is filing the reply and the deponent's details (name, designation, address).
+  - Organizes the case facts and defense arguments into structured reply statements, exhibits, and prayer points.
+
+#### 2. `PreGenerationGuardAgent` (Pre-Drafting Validation)
+- **Role**: Checks the extracted data before any document drafting begins.
+- **Work**:
+  - Verifies that the designated filing respondent exists in the party list.
+  - Ensures company deponents have valid designations and addresses.
+  - Confirms that substantive reply points are present.
+  - Checks statutory verification oath phrasing (*"solemnly affirm"* vs. *"swear and affirm"*).
+  - Validates party labels across all reply points to prevent terminology mistakes (such as confusing "Petitioner" with "Respondent").
+
+#### 3. `DrafterAgent` (Document Drafting)
+- **Role**: Generates the complete legal affidavit following official High Court formatting.
+- **Work**:
+  - Typesets centered uppercase court headings, case numbers, and jurisdiction titles.
+  - Formats party names and designations with right-aligned party labels.
+  - Drafts numbered reply paragraphs with bold keywords and exhibit references.
+  - Compiles the formal prayer clause, verification section, and deponent signature blocks.
+  - Produces both plain text for real-time browser preview and a formatted `.docx` file.
+
+#### 4. `EvaluatorAgent` (Compliance & Quality Audit)
+- **Role**: Evaluates the drafted affidavit for completeness and correctness.
+- **Work**:
+  - Cross-checks case numbers, court names, and party rosters against the original facts.
+  - Verifies that all mandatory court sections are present (Heading, Cause Title, Deponent Clause, Reply Body, Prayer, Verification).
+  - Confirms paragraph numbering and checks that the verification range matches the body paragraphs.
+  - Flags any inconsistencies or terminology mismatches in an itemized issue list.
+  - Computes detailed scores across 6 key evaluation dimensions.
+
+#### 5. `ExporterAgent` (Packaging & Downloads)
+- **Role**: Packages the final deliverables and prepares them for the user.
+- **Work**:
+  - Generates clean, case-specific filenames for the affidavit and reports.
+  - Saves the generated `.docx` document and evaluation reports (`.json` and `.md`).
+  - Sets up download endpoints for one-click downloading from the user interface.
+  - Records execution timing and status across all stages.
+
 ---
 
 ## ✨ Core Capabilities
