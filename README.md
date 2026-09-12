@@ -6,10 +6,9 @@ An AI-powered legal drafting system that transforms unstructured case facts into
 
 ## 🔗 Links & Demos
 
-- **Live Application (Vite on Vercel)**: [https://affidavit-six.vercel.app](https://affidavit-six.vercel.app)
-- **Live Backend API (FastAPI on Render)**: [https://affidavit-backend-czuu.onrender.com](https://affidavit-backend-czuu.onrender.com)
-- **Interactive Swagger API Docs**: [https://affidavit-backend-czuu.onrender.com/docs](https://affidavit-backend-czuu.onrender.com/docs)
-- **Health Check Endpoint**: [https://affidavit-backend-czuu.onrender.com/api/health](https://affidavit-backend-czuu.onrender.com/api/health)
+- **Live Application (Working link)**: [https://affidavit-six.vercel.app](https://affidavit-six.vercel.app)
+
+
 - **Video Walkthrough & Validation Demo**: *[Coming soon / link will be added]*
   > *(Note on Render Free Tier: Free web services spin down after inactivity; the first request after idle may take 30–50 seconds to spin up.)*
 
