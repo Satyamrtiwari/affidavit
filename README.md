@@ -9,7 +9,7 @@ An AI-powered legal drafting system that transforms unstructured case facts into
 - **Live Application (Working link)**: [https://affidavit-six.vercel.app](https://affidavit-six.vercel.app)
 
 
-- **Video Walkthrough & Validation Demo**: *[Coming soon / link will be added]*
+- **Video Walkthrough & Validation Demo**: *https://drive.google.com/file/d/13gD-D_rhvCcrh-hlFwTWQFOqlk0jE-l6/view?usp=sharing*
   > *(Note on Render Free Tier: Free web services spin down after inactivity; the first request after idle may take 30–50 seconds to spin up.)*
 
 ---
