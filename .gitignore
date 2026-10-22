@@ -7,6 +7,9 @@
 .env.*
 *.env
 *.local
+!.env.example
+!frontend/.env.example
+!backend/.env.example
 
 # --- Generated Outputs & Deliverables ---
 outputs/

@@ -27,9 +27,10 @@ import {
   RotateCcw
 } from 'lucide-react';
 
-// Direct backend connection: Uses local proxy in dev, direct Render backend in production (No .env needed)
-const BACKEND_URL = 'https://affidavit-backend-czuu.onrender.com';
-const API_BASE = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+// Direct backend connection: Uses environment variable if specified, otherwise connects to deployed Render backend
+const DEFAULT_BACKEND_URL = 'https://affidavit-backend-vb2a.onrender.com';
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || DEFAULT_BACKEND_URL).replace(/\/+$/, '');
+const API_BASE = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && import.meta.env.VITE_USE_LOCAL_PROXY === 'true')
   ? ''
   : BACKEND_URL;
 
@@ -70,6 +71,13 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, showReportModal, showExtractedDrawer]);
+
+  // Pre-warm backend on page load to mitigate Render cold starts
+  useEffect(() => {
+    fetch(`${API_BASE}/api/health`).catch(() => {
+      // Silently catch background pre-warm errors
+    });
+  }, []);
 
   // File input refs
   const caseInputRef = useRef(null);

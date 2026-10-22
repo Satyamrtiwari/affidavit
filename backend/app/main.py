@@ -78,7 +78,9 @@ app = FastAPI(
 
 # CORS — allow React frontend (Render backend, Vercel frontend, and localhost)
 cors_origins = [
+    "https://affidavit-backend-vb2a.onrender.com",
     "https://affidavit-backend-czuu.onrender.com",
+    "https://affidavit-six.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
